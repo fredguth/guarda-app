@@ -11,7 +11,9 @@ export default function Home({ onNavigateAdd, onNavigateDocument, onNavigateSpla
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <View style={styles.headerTitleContainer}>
-          <GuardaLogo width={42} height={42} style={styles.headerLogo} />
+          <TouchableOpacity onPress={onNavigateSplash}>
+            <GuardaLogo width={42} height={42} style={styles.headerLogo} />
+          </TouchableOpacity>
           <Text style={styles.headerTitle}>Documentos</Text>
         </View>
         <View style={styles.headerIcons}>
