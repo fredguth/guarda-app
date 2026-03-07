@@ -22,6 +22,7 @@ export default function App() {
         <Home
           onNavigateAdd={() => navigateTo('AddDocument')}
           onNavigateDocument={() => navigateTo('DocumentDetail')}
+          onNavigateSplash={() => navigateTo('Splash')}
         />
       )}
 

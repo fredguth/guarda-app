@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, Image } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
+import SplashIcon from '../../assets/splash2.svg';
 
 export default function Splash({ onFinish }) {
   useEffect(() => {
@@ -13,14 +14,8 @@ export default function Splash({ onFinish }) {
       <View style={styles.content}>
         {/* Logo */}
         <View style={styles.logoPlaceholder}>
-          <Image 
-            source={require('../../assets/splash-icon.png')} 
-            style={styles.logoImage} 
-            resizeMode="contain"
-          />
+          <SplashIcon width={250} height={250} />
         </View>
-        <Text style={styles.title}>GUARDA</Text>
-        <Text style={styles.subtitle}>Protege seus dados</Text>
       </View>
     </SafeAreaView>
   );
@@ -37,25 +32,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logoPlaceholder: {
-    width: 120,
-    height: 120,
-    marginBottom: 24,
+    width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  logoImage: {
-    width: 120,
-    height: 120,
-  },
-  title: {
-    fontSize: 42,
-    fontWeight: '900',
-    color: '#000000',
-    letterSpacing: 1.5,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#000000',
-    marginTop: 8,
   },
 });
