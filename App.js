@@ -3,6 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import Splash from './src/screens/Splash';
 import Home from './src/screens/Home';
 import AddDocument from './src/screens/AddDocument';
+import DocumentDetail from './src/screens/DocumentDetail';
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState('Splash');
@@ -18,11 +19,18 @@ export default function App() {
       )}
       
       {currentScreen === 'Home' && (
-        <Home onNavigateAdd={() => navigateTo('AddDocument')} />
+        <Home
+          onNavigateAdd={() => navigateTo('AddDocument')}
+          onNavigateDocument={() => navigateTo('DocumentDetail')}
+        />
       )}
 
       {currentScreen === 'AddDocument' && (
         <AddDocument onBack={() => navigateTo('Home')} />
+      )}
+
+      {currentScreen === 'DocumentDetail' && (
+        <DocumentDetail onBack={() => navigateTo('Home')} />
       )}
     </View>
   );

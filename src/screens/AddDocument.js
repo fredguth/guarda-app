@@ -4,11 +4,11 @@ import { Ionicons } from '@expo/vector-icons';
 
 const DOCUMENTS = [
   { id: '1', title: 'Maioridade 18+', color: '#3B82F6', icon: 'shield-checkmark', subtitle: 'Identidade Digital' },
-  { id: '2', title: 'Carteira de Identidade (RG)', color: '#F3F4F6', icon: 'card-outline', subtitle: 'Registro Geral' },
-  { id: '3', title: 'Carteira de Motorista (CNH)', color: '#F3F4F6', icon: 'car-outline', subtitle: 'Habilitação' },
-  { id: '4', title: 'Cartão de Saúde (SUS)', color: '#F3F4F6', icon: 'medkit-outline', subtitle: 'Saúde Pública' },
-  { id: '5', title: 'Passaporte', color: '#F3F4F6', icon: 'airplane-outline', subtitle: 'Viagem' },
-  { id: '6', title: 'CPF', color: '#F3F4F6', icon: 'document-text-outline', subtitle: 'Cadastro de Pessoa Física' },
+  { id: '2', title: 'Carteira de Identidade Nacional', color: '#F3F4F6', icon: 'id-card-outline', subtitle: 'Documento de Identidade' },
+  { id: '3', title: 'CNH', color: '#F3F4F6', icon: 'car-outline', subtitle: 'Carteira Nacional de Habilitação' },
+  { id: '4', title: 'Título de Eleitor', color: '#F3F4F6', icon: 'checkbox-outline', subtitle: 'Justiça Eleitoral' },
+  { id: '5', title: 'Passaporte', color: '#F3F4F6', icon: 'globe-outline', subtitle: 'Documento de Viagem' },
+  { id: '6', title: 'Comprovante de Endereço', color: '#F3F4F6', icon: 'home-outline', subtitle: 'Residência Atual' },
 ];
 
 export default function AddDocument({ onBack }) {

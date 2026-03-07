@@ -79,7 +79,7 @@ export default function Consent({ visible, onClose, onConfirm }) {
           </View>
         </View>
 
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={true}>
           {/* Title */}
           <Text style={styles.title}>Deseja compartilhar seus dados?</Text>
           

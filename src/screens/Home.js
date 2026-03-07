@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView } fr
 import { Ionicons } from '@expo/vector-icons';
 import Consent from './Consent';
 
-export default function Home({ onNavigateAdd }) {
+export default function Home({ onNavigateAdd, onNavigateDocument }) {
   const [showConsent, setShowConsent] = useState(false);
 
   return (
@@ -20,23 +20,27 @@ export default function Home({ onNavigateAdd }) {
         </View>
       </View>
 
-      <ScrollView 
-        horizontal 
-        showsHorizontalScrollIndicator={false} 
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.carouselContainer}
         snapToInterval={300}
         decelerationRate="fast"
       >
-        {/* Card Maioridade 18+ (Colorido) */}
-        <View style={[styles.card, styles.cardMaioridade]}>
+        {/* Card Maioridade 18+ */}
+        <TouchableOpacity
+          style={[styles.card, styles.cardMaioridade]}
+          activeOpacity={0.8}
+          onPress={onNavigateDocument}
+        >
           <Text style={styles.cardTitleWhite}>Maioridade 18+</Text>
           <Text style={styles.cardSubtitleWhite}>Identidade Digital</Text>
-          
+
           <View style={styles.cardFooter}>
             <Text style={styles.cardValidade}>Validade: 12 Nov 2026</Text>
             <Text style={styles.cardAcesso}>Acessar Documento</Text>
           </View>
-        </View>
+        </TouchableOpacity>
 
         {/* Spacer for ending */}
         <View style={{width: 20}} />
@@ -111,7 +115,7 @@ const styles = StyleSheet.create({
     elevation: 10,
   },
   cardMaioridade: {
-    backgroundColor: '#4C1D95', // Deep Purple
+    backgroundColor: '#4C1D95',
   },
   cardTitleWhite: {
     fontSize: 28,
