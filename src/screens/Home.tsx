@@ -2,30 +2,12 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Consent from './Consent';
-import GuardaLogo from '../../assets/guarda_logo2.svg';
 
 export default function Home({ onNavigateAdd, onNavigateDocument, onNavigateSplash }) {
   const [showConsent, setShowConsent] = useState(false);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.headerTitleContainer}>
-          <TouchableOpacity onPress={onNavigateSplash}>
-            <GuardaLogo width={42} height={42} style={styles.headerLogo} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Documentos</Text>
-        </View>
-        <View style={styles.headerIcons}>
-          <TouchableOpacity onPress={onNavigateAdd} style={styles.iconButton}>
-            <Ionicons name="add" size={24} color="#000" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton}>
-            <Ionicons name="person-outline" size={20} color="#000" />
-          </TouchableOpacity>
-        </View>
-      </View>
-
+    <>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -64,7 +46,8 @@ export default function Home({ onNavigateAdd, onNavigateDocument, onNavigateSpla
         onClose={() => setShowConsent(false)}
         onConfirm={() => setShowConsent(false)}
       />
-    </SafeAreaView>
+    </>
+
   );
 }
 
