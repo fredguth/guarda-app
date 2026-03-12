@@ -25,8 +25,8 @@ export default function App() {
     setCurrentScreen(screen);
   };
 
-  const handleLogin = () => {
-    login();
+  const handleLogin = (authData) => {
+    login(authData);
     navigateTo('Home');
   };
 

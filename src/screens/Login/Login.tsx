@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { KeyboardAvoidingView, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { CustomAuthWebView } from '../../components/CustomAuthWebView';
 import {
   Container,
   ScrollContainer,
@@ -20,6 +21,27 @@ import {
 
 export default function Login({ onLogin }) {
   const insets = useSafeAreaInsets();
+  const [showWebView, setShowWebView] = useState(false);
+
+  const handleSuccess = async (authData: any) => {
+    setShowWebView(false);
+    onLogin(authData);
+  };
+
+  const handleError = (error: string) => {
+    console.error('Auth error:', error);
+    setShowWebView(false);
+  };
+
+  if (showWebView) {
+    return (
+      <CustomAuthWebView
+        onSuccess={handleSuccess}
+        onError={handleError}
+        onCancel={() => setShowWebView(false)}
+      />
+    );
+  }
 
   return (
     <Container>
@@ -47,7 +69,7 @@ export default function Login({ onLogin }) {
                 Faça login com sua conta gov.br para acessar seus documentos digitais
               </LoginDescription>
 
-              <GovButton onPress={onLogin} activeOpacity={0.8}>
+              <GovButton onPress={() => setShowWebView(true)} activeOpacity={0.8}>
                 <Ionicons name="shield-outline" size={24} color="#FFFFFF" />
                 <GovButtonText>Entrar com gov.br</GovButtonText>
               </GovButton>

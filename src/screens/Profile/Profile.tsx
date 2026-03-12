@@ -21,11 +21,14 @@ import {
 } from './styles';
 
 export default function Profile({ onBack }) {
-  const logout = useAuthStore((state) => state.logout);
+  const { user, logout } = useAuthStore();
 
   const handleLogout = () => {
     logout();
   };
+
+  const displayName = user?.social_name || user?.name || 'Usuário';
+  const displayEmail = user?.email || 'usuario@gov.br';
 
   return (
     <Container>
@@ -42,8 +45,8 @@ export default function Profile({ onBack }) {
           <AvatarContainer>
             <Ionicons name="person" size={40} color="#6B7280" />
           </AvatarContainer>
-          <UserName>Usuário</UserName>
-          <UserEmail>usuario@gov.br</UserEmail>
+          <UserName>{displayName}</UserName>
+          <UserEmail>{displayEmail}</UserEmail>
         </ProfileSection>
 
         <MenuSection>
