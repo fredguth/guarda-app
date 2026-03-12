@@ -1,45 +1,48 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Consent from './Consent';
+import {
+  CarouselContainer,
+  Card,
+  CardTitle,
+  CardSubtitle,
+  CardFooter,
+  CardValidade,
+  CardAcesso,
+  Spacer,
+  Footer,
+  QRButton,
+  QRButtonText,
+} from './Home.styles';
 
 export default function Home({ onNavigateAdd, onNavigateDocument, onNavigateSplash }) {
   const [showConsent, setShowConsent] = useState(false);
 
   return (
     <>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.carouselContainer}
-        snapToInterval={300}
-        decelerationRate="fast"
-      >
-        {/* Card Maioridade 18+ */}
-        <TouchableOpacity
-          style={[styles.card, styles.cardMaioridade]}
+      <CarouselContainer>
+        <Card
           activeOpacity={0.8}
           onPress={onNavigateDocument}
         >
-          <Text style={styles.cardTitleWhite}>Maioridade 18+</Text>
-          <Text style={styles.cardSubtitleWhite}>Identidade Digital</Text>
+          <CardTitle>Maioridade 18+</CardTitle>
+          <CardSubtitle>Identidade Digital</CardSubtitle>
 
-          <View style={styles.cardFooter}>
-            <Text style={styles.cardValidade}>Validade: 12 Nov 2026</Text>
-            <Text style={styles.cardAcesso}>Acessar Documento</Text>
-          </View>
-        </TouchableOpacity>
+          <CardFooter>
+            <CardValidade>Validade: 12 Nov 2026</CardValidade>
+            <CardAcesso>Acessar Documento</CardAcesso>
+          </CardFooter>
+        </Card>
 
-        {/* Spacer for ending */}
-        <View style={{width: 20}} />
-      </ScrollView>
+        <Spacer />
+      </CarouselContainer>
 
-      <View style={styles.footer}>
-        <TouchableOpacity style={styles.qrButton} onPress={() => setShowConsent(true)}>
+      <Footer>
+        <QRButton onPress={() => setShowConsent(true)}>
           <Ionicons name="qr-code-outline" size={24} color="#FFF" />
-          <Text style={styles.qrButtonText}>Ler QR-Code</Text>
-        </TouchableOpacity>
-      </View>
+          <QRButtonText>Ler QR-Code</QRButtonText>
+        </QRButton>
+      </Footer>
 
       <Consent 
         visible={showConsent} 
@@ -47,111 +50,7 @@ export default function Home({ onNavigateAdd, onNavigateDocument, onNavigateSpla
         onConfirm={() => setShowConsent(false)}
       />
     </>
-
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingTop: 20,
-    paddingBottom: 20,
-  },
-  headerTitleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  headerLogo: {
-    marginRight: 10,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: '#000000',
-  },
-  headerIcons: {
-    flexDirection: 'row',
-  },
-  iconButton: {
-    marginLeft: 16,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#F5F5F5',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  iconText: {
-    fontSize: 20,
-    color: '#000',
-  },
-  carouselContainer: {
-    paddingLeft: 24,
-    paddingTop: 20,
-    alignItems: 'center',
-  },
-  card: {
-    width: 280,
-    height: 420,
-    borderRadius: 24,
-    padding: 24,
-    marginRight: 16,
-    justifyContent: 'space-between',
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.15,
-    shadowRadius: 20,
-    elevation: 10,
-  },
-  cardMaioridade: {
-    backgroundColor: '#4C1D95',
-  },
-  cardTitleWhite: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-  },
-  cardSubtitleWhite: {
-    fontSize: 16,
-    color: '#E5E7EB',
-    marginTop: 4,
-  },
-  cardFooter: {
-    marginTop: 'auto',
-  },
-  cardValidade: {
-    color: '#E5E7EB',
-    fontSize: 14,
-    marginBottom: 8,
-  },
-  cardAcesso: {
-    color: '#FFFFFF',
-    fontWeight: '600',
-    fontSize: 16,
-  },
-  footer: {
-    padding: 24,
-    paddingBottom: 40,
-  },
-  qrButton: {
-    backgroundColor: '#000000',
-    borderRadius: 100,
-    paddingVertical: 18,
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'center',
-  },
-  qrButtonText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '700',
-    marginLeft: 8,
-  },
-});
+
