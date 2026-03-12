@@ -1,21 +1,50 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import Splash from './src/screens/Splash';
+import Login from './src/screens/Login/Login';
 import Home from './src/screens/Home';
 import AddDocument from './src/screens/AddDocument';
 import DocumentDetail from './src/screens/DocumentDetail';
+import Profile from './src/screens/Profile/Profile';
+import Header from './src/components/Header/Header';
+import { useAuthStore } from './src/store/authStore';
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState('Splash');
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const login = useAuthStore((state) => state.login);
+
+  useEffect(() => {
+    if (!isAuthenticated && currentScreen !== 'Splash' && currentScreen !== 'Login') {
+      setCurrentScreen('Login');
+    }
+  }, [isAuthenticated]);
 
   const navigateTo = (screen) => {
     setCurrentScreen(screen);
   };
 
+  const handleLogin = () => {
+    login();
+    navigateTo('Home');
+  };
+
   return (
     <View style={styles.container}>
+      {currentScreen !== 'Splash' && currentScreen !== 'Login' && (
+        <Header 
+          onNavigateAdd={() => navigateTo('AddDocument')} 
+          onNavigateSplash={() => navigateTo('Splash')}
+          onNavigateProfile={() => navigateTo('Profile')} 
+        />
+      )}
+      
       {currentScreen === 'Splash' && (
-        <Splash onFinish={() => navigateTo('Home')} />
+        <Splash onFinish={() => navigateTo('Login')} />
+      )}
+
+      {currentScreen === 'Login' && (
+        <Login onLogin={handleLogin} />
       )}
       
       {currentScreen === 'Home' && (
@@ -32,6 +61,10 @@ export default function App() {
 
       {currentScreen === 'DocumentDetail' && (
         <DocumentDetail onBack={() => navigateTo('Home')} />
+      )}
+
+      {currentScreen === 'Profile' && (
+        <Profile onBack={() => navigateTo('Home')} />
       )}
     </View>
   );
