@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { View, StyleSheet } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Splash from './src/screens/Splash';
 import Login from './src/screens/Login/Login';
 import Home from './src/screens/Home';
@@ -10,11 +11,11 @@ import Header from './src/components/Header/Header';
 import { useAuthStore } from './src/store/authStore';
 
 export default function App() {
-  const [currentScreen, setCurrentScreen] = useState('Splash');
+  const [currentScreen, setCurrentScreen] = React.useState('Splash');
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const login = useAuthStore((state) => state.login);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!isAuthenticated && currentScreen !== 'Splash' && currentScreen !== 'Login') {
       setCurrentScreen('Login');
     }
@@ -30,7 +31,8 @@ export default function App() {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaProvider>
+      <View style={styles.container}>
       {currentScreen !== 'Splash' && currentScreen !== 'Login' && (
         <Header 
           onNavigateAdd={() => navigateTo('AddDocument')} 
@@ -66,7 +68,8 @@ export default function App() {
       {currentScreen === 'Profile' && (
         <Profile onBack={() => navigateTo('Home')} />
       )}
-    </View>
+      </View>
+    </SafeAreaProvider>
   );
 }
 

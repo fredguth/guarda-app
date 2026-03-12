@@ -1,19 +1,20 @@
-import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import SplashIcon from '../../assets/splash2.svg';
 import appConfig from '../../app.json';
 
 export default function Splash({ onFinish }) {
-  useEffect(() => {
-    // Simulando tempo de carregamento da Splash Screen
+  const insets = useSafeAreaInsets();
+
+  React.useEffect(() => {
     const timer = setTimeout(onFinish, 2000);
     return () => clearTimeout(timer);
   }, []);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
       <View style={styles.content}>
-        {/* Logo */}
         <TouchableOpacity style={styles.logoPlaceholder} onPress={onFinish} activeOpacity={0.8}>
           <SplashIcon width={250} height={250} />
         </TouchableOpacity>
@@ -21,7 +22,7 @@ export default function Splash({ onFinish }) {
       <View style={styles.footer}>
         <Text style={styles.versionText}>Versão {appConfig.expo.version}</Text>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

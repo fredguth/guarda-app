@@ -1,11 +1,15 @@
 import styled from 'styled-components/native';
-import { StatusBar } from 'react-native';
 
 export const Container = styled.View`
   flex: 1;
   background-color: #FFFFFF;
-  padding-top: ${StatusBar.currentHeight ? StatusBar.currentHeight : 0}px;
+  margin-top: 50px;
 `;
+
+export const ScrollContainer = styled.ScrollView.attrs({
+  showsVerticalScrollIndicator: false,
+  keyboardShouldPersistTaps: 'handled',
+})``;
 
 export const Content = styled.View`
   flex: 1;
@@ -33,6 +37,7 @@ export const Subtitle = styled.Text`
 
 export const LoginSection = styled.View`
   align-items: center;
+  margin-bottom: 10px;
 `;
 
 export const LoginTitle = styled.Text`
@@ -74,7 +79,7 @@ export const GovButtonText = styled.Text`
 `;
 
 export const Footer = styled.View`
-  padding: 0 24px 40px;
+  padding: 24px;
 `;
 
 export const FooterText = styled.Text`

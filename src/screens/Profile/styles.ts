@@ -1,5 +1,4 @@
 import styled from 'styled-components/native';
-import { StatusBar } from 'react-native';
 
 export const Container = styled.View`
   flex: 1;
@@ -30,7 +29,9 @@ export const Spacer = styled.View`
   width: 40px;
 `;
 
-export const Content = styled.ScrollView`
+export const Content = styled.ScrollView.attrs({
+  showsVerticalScrollIndicator: false,
+})`
   flex: 1;
 `;
 
