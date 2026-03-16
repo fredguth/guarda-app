@@ -1,9 +1,16 @@
 import styled from 'styled-components/native';
 
+export const BackButton = styled.TouchableOpacity`
+  position: absolute;
+  top: 0;
+  left: 16px;
+  padding: 12px;
+  z-index: 10;
+`;
+
 export const Container = styled.View`
   flex: 1;
   background-color: #FFFFFF;
-  margin-top: 150px;
 `;
 
 export const ScrollContainer = styled.ScrollView.attrs({

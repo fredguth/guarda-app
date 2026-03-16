@@ -15,11 +15,11 @@ import {
   LoginDescription,
   GovButton,
   GovButtonText,
-  Footer,
   FooterText,
+  BackButton,
 } from './styles';
 
-export default function Login({ onLogin }) {
+export default function Login({ onLogin, onBack }) {
   const insets = useSafeAreaInsets();
   const [showWebView, setShowWebView] = useState(false);
 
@@ -36,15 +36,20 @@ export default function Login({ onLogin }) {
   if (showWebView) {
     return (
       <CustomAuthWebView
+        onCancel={() => setShowWebView(false)}
         onSuccess={handleSuccess}
         onError={handleError}
-        onCancel={() => setShowWebView(false)}
       />
     );
   }
 
   return (
     <Container>
+      {onBack && (
+        <BackButton onPress={onBack} style={{ paddingTop: insets.top }}>
+          <Ionicons name="arrow-back" size={24} color="#111827" />
+        </BackButton>
+      )}
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
