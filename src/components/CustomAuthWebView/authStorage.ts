@@ -25,6 +25,7 @@ export const saveTokenData = async (token: any): Promise<void> => {
     ['expires_in',   String(token.expires_in || '')],
     ['expires_at',   expiresAt],
     ['scope',        token.scope       || ''],
+    ['c_nonce',      token.c_nonce     || ''],
     ['token_data',   JSON.stringify(token)],
   ]);
 };
