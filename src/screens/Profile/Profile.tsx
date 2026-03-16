@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuthStore } from '../../store/authStore';
+import { VCSDK } from 'vc-sdk-headless';
+import ClearCredentialsModal from '../../components/ClearCredentialsModal';
+import SuccessModal from '../../components/SuccessModal';
+import ErrorModal from '../../components/ErrorModal';
 import {
   Container,
   Header,
@@ -8,10 +11,6 @@ import {
   HeaderTitle,
   Spacer,
   Content,
-  ProfileSection,
-  AvatarContainer,
-  UserName,
-  UserEmail,
   MenuSection,
   MenuItem,
   MenuItemLeft,
@@ -21,14 +20,23 @@ import {
 } from './styles';
 
 export default function Profile({ onBack }) {
-  const { user, logout } = useAuthStore();
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
 
-  const handleLogout = () => {
-    logout();
+  const handleDeleteConfirm = async () => {
+    setShowConfirmModal(false);
+    try {
+      const credentials = await VCSDK.credentials.getAll();
+      for (const cred of credentials) {
+        await VCSDK.credentials.delete(cred.id);
+      }
+      setShowSuccessModal(true);
+    } catch (e) {
+      console.error('[Profile] Delete credentials failed:', e);
+      setShowErrorModal(true);
+    }
   };
-
-  const displayName = user?.social_name || user?.name || 'Usuário';
-  const displayEmail = user?.email || 'usuario@gov.br';
 
   return (
     <Container>
@@ -36,28 +44,12 @@ export default function Profile({ onBack }) {
         <BackButton onPress={onBack}>
           <Ionicons name="arrow-back" size={24} color="#000" />
         </BackButton>
-        <HeaderTitle>Perfil</HeaderTitle>
+        <HeaderTitle>Configurações</HeaderTitle>
         <Spacer />
       </Header>
 
       <Content showsVerticalScrollIndicator={false}>
-        <ProfileSection>
-          <AvatarContainer>
-            <Ionicons name="person" size={40} color="#6B7280" />
-          </AvatarContainer>
-          <UserName>{displayName}</UserName>
-          <UserEmail>{displayEmail}</UserEmail>
-        </ProfileSection>
-
         <MenuSection>
-          <MenuItem>
-            <MenuItemLeft>
-              <Ionicons name="settings-outline" size={24} color="#6B7280" />
-              <MenuItemText>Configurações</MenuItemText>
-            </MenuItemLeft>
-            <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
-          </MenuItem>
-
           <MenuItem>
             <MenuItemLeft>
               <Ionicons name="help-circle-outline" size={24} color="#6B7280" />
@@ -75,10 +67,31 @@ export default function Profile({ onBack }) {
           </MenuItem>
         </MenuSection>
 
-        <LogoutButton onPress={handleLogout} activeOpacity={0.8}>
-          <LogoutButtonText>Sair da Conta</LogoutButtonText>
+        <LogoutButton onPress={() => setShowConfirmModal(true)} activeOpacity={0.8}>
+          <LogoutButtonText>Apagar minhas credenciais</LogoutButtonText>
         </LogoutButton>
       </Content>
+
+      <ClearCredentialsModal
+        visible={showConfirmModal}
+        onClose={() => setShowConfirmModal(false)}
+        onConfirm={handleDeleteConfirm}
+      />
+
+      <SuccessModal
+        visible={showSuccessModal}
+        title="Credenciais apagadas"
+        description="Todas as suas credenciais foram removidas com sucesso."
+        buttonText="Voltar ao início"
+        onClose={() => { setShowSuccessModal(false); onBack(); }}
+      />
+
+      <ErrorModal
+        visible={showErrorModal}
+        title="Erro ao apagar"
+        description="Não foi possível apagar as credenciais. Tente novamente."
+        onClose={() => setShowErrorModal(false)}
+      />
     </Container>
   );
 }
