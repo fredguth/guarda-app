@@ -20,7 +20,7 @@ export default function Header({ onNavigateAdd, onNavigateSplash, onNavigateProf
         </TouchableOpacity>
         <TouchableOpacity onPress={onNavigateProfile}>
           <IconButton>
-            <Ionicons name="person-outline" size={20} color="#000" />
+            <Ionicons name="settings-outline" size={20} color="#000" />
           </IconButton>
         </TouchableOpacity>
       </HeaderIcons>
