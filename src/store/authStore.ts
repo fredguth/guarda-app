@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { clearAllAuthDataFromStorage } from '../components/CustomAuthWebView/authStorage';
 
 interface User {
   sub?: string;
@@ -15,7 +14,6 @@ interface AuthState {
   user: User | null;
   accessToken: string | null;
   login: (authData: { user: User; accessToken: string }) => void;
-  logout: () => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -27,12 +25,4 @@ export const useAuthStore = create<AuthState>((set) => ({
     user: authData.user, 
     accessToken: authData.accessToken 
   }),
-  logout: async () => {
-    await clearAllAuthDataFromStorage();
-    set({ 
-      isAuthenticated: false, 
-      user: null, 
-      accessToken: null 
-    });
-  },
 }));
