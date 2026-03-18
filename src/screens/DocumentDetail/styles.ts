@@ -124,3 +124,21 @@ export const InfoValue = styled.Text`
   font-weight: 600;
   color: #111827;
 `;
+
+export const DeleteButton = styled.TouchableOpacity`
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  background-color: #ef4444;
+  border-radius: 16px;
+  padding: 16px;
+  margin-top: 8px;
+  margin-bottom: 16px;
+  gap: 8px;
+`;
+
+export const DeleteButtonText = styled.Text`
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+`;

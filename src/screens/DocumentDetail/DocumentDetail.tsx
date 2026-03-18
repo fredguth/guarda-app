@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
+import DeleteCredentialModal from '../../components/DeleteCredentialModal';
 import {
   Container,
   Header,
@@ -20,11 +21,14 @@ import {
   InfoRow,
   InfoLabel,
   InfoValue,
+  DeleteButton,
+  DeleteButtonText,
 } from './styles';
 
 interface DocumentDetailProps {
   onBack: () => void;
   credential: any;
+  onDelete: (vcId: string) => Promise<void>;
 }
 
 interface AgeInfo {
@@ -132,10 +136,21 @@ function CAFSection({ subject }: { subject: any }) {
   );
 }
 
-export default function DocumentDetail({ onBack, credential }: DocumentDetailProps) {
+export default function DocumentDetail({ onBack, credential, onDelete }: DocumentDetailProps) {
   const vc = credential?.vc || {};
   const subject = vc.credentialSubject || {};
   const credType = resolveCredentialType(vc);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  const handleDelete = async () => {
+    try {
+      await onDelete(credential?.vc?.id ?? credential?.id);
+      setShowDeleteModal(false);
+      onBack();
+    } catch (e) {
+      console.error('[Delete] Erro ao apagar credencial:', e);
+    }
+  };
 
   return (
     <Container>
@@ -159,7 +174,18 @@ export default function DocumentDetail({ onBack, credential }: DocumentDetailPro
         </InfoCard>
 
         {credType === 'CAF' && <CAFSection subject={subject} />}
+
+        <DeleteButton onPress={() => setShowDeleteModal(true)}>
+          <Ionicons name="trash-outline" size={20} color="#fff" />
+          <DeleteButtonText>Apagar Credencial</DeleteButtonText>
+        </DeleteButton>
       </ScrollContent>
+
+      <DeleteCredentialModal
+        visible={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleDelete}
+      />
     </Container>
   );
 }
