@@ -99,3 +99,44 @@ export const LogoutButtonText = styled.Text`
   font-size: 16px;
   font-weight: 700;
 `;
+
+export const InfoModalOverlay = styled.View`
+  flex: 1;
+  background-color: rgba(0, 0, 0, 0.5);
+  align-items: center;
+  justify-content: center;
+`;
+
+export const InfoModalContainer = styled.View`
+  background-color: #FFFFFF;
+  border-radius: 16px;
+  padding: 24px;
+  margin: 32px;
+  align-items: center;
+`;
+
+export const InfoModalTitle = styled.Text`
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 12px;
+`;
+
+export const InfoModalDescription = styled.Text`
+  font-size: 15px;
+  color: #6B7280;
+  text-align: center;
+  margin-bottom: 24px;
+`;
+
+export const InfoModalButton = styled.TouchableOpacity`
+  background-color: #111827;
+  border-radius: 100px;
+  padding: 12px 32px;
+`;
+
+export const InfoModalButtonText = styled.Text`
+  color: #FFFFFF;
+  font-size: 16px;
+  font-weight: 700;
+`;

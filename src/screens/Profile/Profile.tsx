@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { VCSDK } from 'vc-sdk-headless';
 import ClearCredentialsModal from '../../components/ClearCredentialsModal';
+import { clearAllAuthDataFromStorage } from '../../components/CustomAuthWebView/authStorage';
 import SuccessModal from '../../components/SuccessModal';
 import ErrorModal from '../../components/ErrorModal';
 import {
@@ -17,12 +19,19 @@ import {
   MenuItemText,
   LogoutButton,
   LogoutButtonText,
+  InfoModalOverlay,
+  InfoModalContainer,
+  InfoModalTitle,
+  InfoModalDescription,
+  InfoModalButton,
+  InfoModalButtonText,
 } from './styles';
 
 export default function Profile({ onBack }) {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
+  const [infoModal, setInfoModal] = useState<{ visible: boolean; title: string } | null>(null);
 
   const handleDeleteConfirm = async () => {
     setShowConfirmModal(false);
@@ -31,6 +40,7 @@ export default function Profile({ onBack }) {
       for (const cred of credentials) {
         await VCSDK.credentials.delete(cred.id);
       }
+      await clearAllAuthDataFromStorage();
       setShowSuccessModal(true);
     } catch (e) {
       console.error('[Profile] Delete credentials failed:', e);
@@ -50,7 +60,7 @@ export default function Profile({ onBack }) {
 
       <Content showsVerticalScrollIndicator={false}>
         <MenuSection>
-          <MenuItem>
+          <MenuItem onPress={() => setInfoModal({ visible: true, title: 'Ajuda' })}>
             <MenuItemLeft>
               <Ionicons name="help-circle-outline" size={24} color="#6B7280" />
               <MenuItemText>Ajuda</MenuItemText>
@@ -58,7 +68,7 @@ export default function Profile({ onBack }) {
             <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
           </MenuItem>
 
-          <MenuItem>
+          <MenuItem onPress={() => setInfoModal({ visible: true, title: 'Sobre' })}>
             <MenuItemLeft>
               <Ionicons name="information-circle-outline" size={24} color="#6B7280" />
               <MenuItemText>Sobre</MenuItemText>
@@ -71,6 +81,24 @@ export default function Profile({ onBack }) {
           <LogoutButtonText>Apagar minhas credenciais</LogoutButtonText>
         </LogoutButton>
       </Content>
+
+      <Modal
+        visible={!!infoModal?.visible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setInfoModal(null)}
+        statusBarTranslucent
+      >
+        <InfoModalOverlay>
+          <InfoModalContainer>
+            <InfoModalTitle>{infoModal?.title}</InfoModalTitle>
+            <InfoModalDescription>Esta funcionalidade será implementada em breve.</InfoModalDescription>
+            <InfoModalButton onPress={() => setInfoModal(null)} activeOpacity={0.8}>
+              <InfoModalButtonText>Fechar</InfoModalButtonText>
+            </InfoModalButton>
+          </InfoModalContainer>
+        </InfoModalOverlay>
+      </Modal>
 
       <ClearCredentialsModal
         visible={showConfirmModal}
