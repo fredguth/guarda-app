@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { KeyboardAvoidingView, Platform } from 'react-native';
+import { KeyboardAvoidingView, Platform, Image, Dimensions } from 'react-native';
+
+const { height } = Dimensions.get('window');
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CustomAuthWebView } from '../../components/CustomAuthWebView';
 import {
@@ -8,8 +10,6 @@ import {
   ScrollContainer,
   Content,
   Header,
-  Title,
-  Subtitle,
   LoginSection,
   LoginTitle,
   LoginDescription,
@@ -63,9 +63,7 @@ export default function Login({ onLogin, onBack }) {
         >
           <Content>
             <Header>
-              <Ionicons name="shield-checkmark" size={64} color="#4C1D95" />
-              <Title>Guarda</Title>
-              <Subtitle>Sua identidade digital segura</Subtitle>
+              <Image source={require('../../../assets/carteira_documentos.png')} style={{ width: '100%', height: height * 0.36, resizeMode: 'contain' }} />
             </Header>
 
             <LoginSection>

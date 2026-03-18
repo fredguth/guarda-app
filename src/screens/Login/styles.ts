@@ -1,4 +1,8 @@
 import styled from 'styled-components/native';
+import { Dimensions } from 'react-native';
+
+const { width, height } = Dimensions.get('window');
+const scale = Math.min(width / 390, height / 844);
 
 export const BackButton = styled.TouchableOpacity`
   position: absolute;
@@ -26,20 +30,24 @@ export const Content = styled.View`
 
 export const Header = styled.View`
   align-items: center;
-  margin-bottom: 80px;
+  margin-bottom: ${Math.max(24, 80 * scale)}px;
 `;
 
 export const Title = styled.Text`
-  font-size: 40px;
+  font-size: ${Math.max(28, 30 * scale)}px;
   font-weight: 800;
   color: #000000;
-  margin-top: 24px;
+  margin-top: ${Math.max(8, 12 * scale)}px;
+  text-align: center;
 `;
 
 export const Subtitle = styled.Text`
-  font-size: 16px;
-  color: #6B7280;
-  margin-top: 8px;
+  font-size: ${Math.max(18, 18 * scale)}px;
+  font-weight: 400;
+  color: #111827;
+  margin-top: 2px;
+  text-align: center;
+  margin-right: 12px;
 `;
 
 export const LoginSection = styled.View`
