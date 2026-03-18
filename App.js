@@ -24,6 +24,7 @@ import Profile from './src/screens/Profile/Profile';
 import Consent from './src/screens/Consent/Consent';
 import QrScanner from './src/screens/QrScanner/QrScanner';
 import Header from './src/components/Header/Header';
+import NoCredentialModal from './src/components/NoCredentialModal';
 import { useAuthStore } from './src/store/authStore';
 
 export default function App() {
@@ -31,6 +32,7 @@ export default function App() {
   const [pendingScreen, setPendingScreen] = React.useState(null);
   const [selectedCredential, setSelectedCredential] = React.useState(null);
   const [pendingConsent, setPendingConsent] = React.useState(null);
+  const [showNoCredentialModal, setShowNoCredentialModal] = React.useState(false);
   const login = useAuthStore((state) => state.login);
 
   const navigateToConsent = React.useCallback(async (appName) => {
@@ -40,7 +42,7 @@ export default function App() {
       setCurrentScreen('Consent');
     } else {
       setPendingScreen('Consent');
-      setCurrentScreen('Login');
+      setShowNoCredentialModal(true);
     }
   }, []);
 
@@ -63,7 +65,7 @@ export default function App() {
 
   React.useEffect(() => {
     const SDK_CONFIG = {
-      appId: 'guarda-wallet',
+      appId: 'Carteira-wallet',
       network: {
         baseUrl: process.env.EXPO_PUBLIC_BASE_URL,
         oauth: {
@@ -138,6 +140,9 @@ export default function App() {
         <DocumentDetail 
           onBack={() => navigateTo('Home')} 
           credential={selectedCredential}
+          onDelete={async (vcId) => {
+            await VCSDK.credentials.delete(vcId);
+          }}
         />
       )}
 
@@ -151,6 +156,12 @@ export default function App() {
           onScanned={(appName) => navigateToConsent(appName)}
         />
       )}
+
+      <NoCredentialModal
+        visible={showNoCredentialModal}
+        onContinue={() => { setShowNoCredentialModal(false); setCurrentScreen('Login'); }}
+        onDismiss={() => { setShowNoCredentialModal(false); setPendingScreen(null); AsyncStorage.removeItem(PENDING_KEY).catch(() => {}); }}
+      />
 
       {currentScreen === 'Consent' && (
         <Consent

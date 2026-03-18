@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const AUTH_STORAGE_KEYS = [
   'auth_params', 'auth_code', 'auth_state',
-  'access_token', 'id_token', 'token_type', 'expires_in', 'expires_at', 'scope', 'token_data',
+  'access_token', 'id_token', 'token_type', 'expires_in', 'expires_at', 'scope', 'c_nonce', 'token_data',
   'user_sub', 'user_name', 'user_social_name', 'user_profile', 'user_picture',
   'user_email', 'user_email_verified', 'user_data',
 ] as const;
@@ -13,6 +13,16 @@ export const saveCallbackParams = async (params: Record<string, string>): Promis
   if (params.state) entries.push(['auth_state', params.state]);
   await AsyncStorage.multiSet(entries);
 };
+
+function extractNonce(token: any): string {
+  if (token.c_nonce) return token.c_nonce;
+  try {
+    const payload = JSON.parse(atob(token.id_token.split('.')[1]));
+    return payload.nonce || payload.c_nonce || '';
+  } catch {
+    return '';
+  }
+}
 
 export const saveTokenData = async (token: any): Promise<void> => {
   const expiresAt = token.expires_in
@@ -25,7 +35,7 @@ export const saveTokenData = async (token: any): Promise<void> => {
     ['expires_in',   String(token.expires_in || '')],
     ['expires_at',   expiresAt],
     ['scope',        token.scope       || ''],
-    ['c_nonce',      token.c_nonce     || ''],
+    ['c_nonce',      extractNonce(token)],
     ['token_data',   JSON.stringify(token)],
   ]);
 };

@@ -55,14 +55,20 @@ export function useWallet() {
   const downloadCredential = async (issuer: string, type: string): Promise<void> => {
     setDownloading(true);
     try {
-      await VCSDK.credentials.download(issuer, type);
+      const result = await VCSDK.credentials.download(issuer, type);
+      if (result === null) throw Object.assign(new Error('[Wallet] Auth required'), { code: 'AUTH_REQUIRED' });
       await loadCredentials();
-    } catch {
-      throw new Error('[Wallet] Download failed');
+    } catch (e) {
+      throw e;
     } finally {
       setDownloading(false);
     }
   };
 
-  return { credentials, downloading, ready, downloadCredential, loadCredentials };
+  const deleteCredential = async (vcId: string): Promise<void> => {
+    await VCSDK.credentials.delete(vcId);
+    await loadCredentials();
+  };
+
+  return { credentials, downloading, ready, downloadCredential, loadCredentials, deleteCredential };
 }
