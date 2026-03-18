@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as LocalAuthentication from 'expo-local-authentication';
-import SplashIcon from '../../../assets/splash2.svg';
+import { Image } from 'react-native';
 import appConfig from '../../../app.json';
 import { Container, LogoContainer, Footer, VersionText } from './styles';
 
@@ -23,7 +23,7 @@ export default function Splash({ onFinish }: SplashProps) {
       }
 
       const result = await LocalAuthentication.authenticateAsync({
-        promptMessage: 'Confirme sua identidade para acessar o Guarda',
+        promptMessage: 'Confirme sua identidade para acessar a Carteira',
         fallbackLabel: 'Usar PIN',
         cancelLabel: 'Cancelar',
         disableDeviceFallback: false,
@@ -47,7 +47,7 @@ export default function Splash({ onFinish }: SplashProps) {
   return (
     <Container style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}>
       <LogoContainer>
-        <SplashIcon width={250} height={250} />
+        <Image source={require('../../../assets/carteira_documentos.png')} style={{ width: 250, height: 250, resizeMode: 'contain' }} />
       </LogoContainer>
       <Footer>
         <VersionText>Versão {appConfig.expo.version}</VersionText>
