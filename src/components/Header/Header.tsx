@@ -10,7 +10,7 @@ export default function Header({ onNavigateAdd, onNavigateSplash, onNavigateProf
         <TouchableOpacity>
           <Logo width={42} height={42} />
         </TouchableOpacity>
-        <HeaderTitle>Guarda</HeaderTitle>
+        <HeaderTitle>Carteira</HeaderTitle>
       </HeaderTitleContainer>
       <HeaderIcons>
         <TouchableOpacity onPress={onNavigateAdd}>

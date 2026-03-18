@@ -1,10 +1,11 @@
 {
-  "name": "guarda",
+  "name": "Carteira",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
     "start": "expo start",
-    "android": "expo run:android",
+    "prebuild:icon": "python3 scripts/resize-icon.py",
+    "android": "npm run prebuild:icon && expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web"
   },

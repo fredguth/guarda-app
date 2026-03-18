@@ -1,6 +1,6 @@
 import styled from 'styled-components/native';
 import { StatusBar } from 'react-native';
-import GuardaLogo from '../../../assets/guarda_logo2.svg';
+import GuardaLogo from '../../../assets/carteira_documentos_logo.svg';
 
 export const HeaderContainer = styled.View`
   flex-direction: row;
