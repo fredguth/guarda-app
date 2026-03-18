@@ -6,6 +6,7 @@ import { useWallet } from '../../hooks/useWallet';
 import { useAuthStore } from '../../store/authStore';
 import SuccessModal from '../../components/SuccessModal';
 import ErrorModal from '../../components/ErrorModal';
+import NoCredentialModal from '../../components/NoCredentialModal';
 import {
   Container,
   Header,
@@ -34,6 +35,7 @@ interface DocumentItem {
 export default function AddDocument({ onBack, onLoginRequired }: AddDocumentProps) {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
+  const [showNoCredentialModal, setShowNoCredentialModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const { sections, loading } = useIssuers(true);
   const { downloadCredential, downloading } = useWallet();
@@ -45,11 +47,15 @@ export default function AddDocument({ onBack, onLoginRequired }: AddDocumentProp
   };
 
   const handleDownload = async (issuer: any, type: any) => {
-    if (!isAuthenticated) return onLoginRequired?.();
+    if (!isAuthenticated) return setShowNoCredentialModal(true);
     try {
       await downloadCredential(issuer, type);
       setShowSuccessModal(true);
-    } catch {
+    } catch (e: any) {
+      if (e?.code === 'AUTH_REQUIRED') {
+        setShowNoCredentialModal(true);
+        return;
+      }
       showError('Falha ao baixar credencial. Tente novamente.');
     }
   };
@@ -103,6 +109,12 @@ export default function AddDocument({ onBack, onLoginRequired }: AddDocumentProp
         ListHeaderComponent={
           loading ? <ActivityIndicator size="large" color="#3B82F6" style={{ marginVertical: 20 }} /> : null
         }
+      />
+
+      <NoCredentialModal
+        visible={showNoCredentialModal}
+        onContinue={() => { setShowNoCredentialModal(false); onLoginRequired?.(); }}
+        onDismiss={() => setShowNoCredentialModal(false)}
       />
 
       <SuccessModal
