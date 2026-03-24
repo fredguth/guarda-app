@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { ActivityIndicator, View } from 'react-native';
 import { useWallet } from '../../hooks/useWallet';
+import { getAuthDataFromStorage } from '../../components/CustomAuthWebView/authStorage';
 import StackedCards from '../../components/StackedCards';
 import EmptyState from '../../components/EmptyState';
 import { Footer, QRButton, QRButtonText } from './styles';
@@ -16,6 +17,10 @@ interface HomeProps {
 
 export default function Home({ onNavigateAdd, onNavigateDocument, onNavigateQrScanner }: HomeProps) {
   const { credentials, downloading } = useWallet();
+
+  useEffect(() => {
+    getAuthDataFromStorage();
+  }, []);
 
   return (
     <>
