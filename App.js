@@ -4,7 +4,7 @@ import { Linking } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { handleDeepLink, PENDING_KEY } from './src/services/deepLinkHandler';
-import { isUserAuthenticated, getAuthDataFromStorage } from './src/components/CustomAuthWebView/authStorage';
+import { isUserAuthenticated } from './src/components/CustomAuthWebView/authStorage';
 import { VCSDK } from 'vc-sdk-headless';
 
 async function hasAgeCredential() {
@@ -34,6 +34,7 @@ export default function App() {
   const [pendingConsent, setPendingConsent] = React.useState(null);
   const [showNoCredentialModal, setShowNoCredentialModal] = React.useState(false);
   const login = useAuthStore((state) => state.login);
+  const hydrate = useAuthStore((state) => state.hydrate);
 
   const navigateToConsent = React.useCallback(async (appName) => {
     setPendingConsent({ appName });
@@ -58,13 +59,9 @@ export default function App() {
 
   React.useEffect(() => {
     AsyncStorage.removeItem(PENDING_KEY).catch(() => {});
+    hydrate();
     isUserAuthenticated().then(async (auth) => {
-      if (auth) {
-        const data = await getAuthDataFromStorage();
-        if (data?.token?.accessToken && data?.user) {
-          login({ user: data.user, accessToken: data.token.accessToken });
-        }
-      }
+      if (!auth) return;
     });
     Linking.getInitialURL().then((url) => { if (url) processDeepLink(url); });
     const sub = Linking.addEventListener('url', ({ url }) => processDeepLink(url));

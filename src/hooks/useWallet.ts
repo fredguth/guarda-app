@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { VCSDK } from 'vc-sdk-headless';
+import { useAuthStore } from '../store/authStore';
 
 export interface WalletCredential {
   id: string;
@@ -19,6 +20,8 @@ export function useWallet() {
   const [credentials, setCredentials] = useState<WalletCredential[]>([]);
   const [downloading, setDownloading] = useState(false);
   const [ready, setReady] = useState(false);
+
+  const accessToken = useAuthStore((state) => state.accessToken);
 
   const loadCredentials = async (): Promise<void> => {
     try {
@@ -55,7 +58,8 @@ export function useWallet() {
   const downloadCredential = async (issuer: string, type: string): Promise<void> => {
     setDownloading(true);
     try {
-      const result = await VCSDK.credentials.download(issuer, type);
+      if (!accessToken) throw Object.assign(new Error('[Wallet] Auth required'), { code: 'AUTH_REQUIRED' });
+      const result = await VCSDK.credentials.download(issuer, type, accessToken);
       if (result === null) throw Object.assign(new Error('[Wallet] Auth required'), { code: 'AUTH_REQUIRED' });
       await loadCredentials();
     } catch (e) {

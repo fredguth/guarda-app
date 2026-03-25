@@ -3,7 +3,7 @@ import { Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { VCSDK } from 'vc-sdk-headless';
 import ClearCredentialsModal from '../../components/ClearCredentialsModal';
-import { clearAllAuthDataFromStorage } from '../../components/CustomAuthWebView/authStorage';
+import { useAuthStore } from '../../store/authStore';
 import SuccessModal from '../../components/SuccessModal';
 import ErrorModal from '../../components/ErrorModal';
 import {
@@ -32,6 +32,7 @@ export default function Profile({ onBack }) {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [infoModal, setInfoModal] = useState<{ visible: boolean; title: string } | null>(null);
+  const logout = useAuthStore((state) => state.logout);
 
   const handleDeleteConfirm = async () => {
     setShowConfirmModal(false);
@@ -40,7 +41,7 @@ export default function Profile({ onBack }) {
       for (const cred of credentials) {
         await VCSDK.credentials.delete(cred.id);
       }
-      await clearAllAuthDataFromStorage();
+      await logout();
       setShowSuccessModal(true);
     } catch (e) {
       console.error('[Profile] Delete credentials failed:', e);
