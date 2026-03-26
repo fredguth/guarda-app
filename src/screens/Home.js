@@ -2,18 +2,14 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Consent from './Consent';
-import GuardaLogo from '../../assets/guarda_logo2.svg';
 
-export default function Home({ onNavigateAdd, onNavigateDocument, onNavigateSplash }) {
+export default function Home({ onNavigateAdd, onNavigateDocument }) {
   const [showConsent, setShowConsent] = useState(false);
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <View style={styles.headerTitleContainer}>
-          <GuardaLogo width={42} height={42} style={styles.headerLogo} />
-          <Text style={styles.headerTitle}>Documentos</Text>
-        </View>
+        <Text style={styles.headerTitle}>Documentos</Text>
         <View style={styles.headerIcons}>
           <TouchableOpacity onPress={onNavigateAdd} style={styles.iconButton}>
             <Ionicons name="add" size={24} color="#000" />
@@ -79,15 +75,8 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingBottom: 20,
   },
-  headerTitleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  headerLogo: {
-    marginRight: 10,
-  },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 32,
     fontWeight: '800',
     color: '#000000',
   },

@@ -40,8 +40,10 @@ export default function Consent({ visible, onClose, onConfirm }) {
       }
 
       const result = await LocalAuthentication.authenticateAsync({
-        promptMessage: 'Autentique-se com Biometria',
+        promptMessage: 'Autentique-se para autorizar o compartilhamento',
+        fallbackLabel: 'Usar senha',
         cancelLabel: 'Cancelar',
+        disableDeviceFallback: false,
       });
 
       setIsAuthenticating(false);
