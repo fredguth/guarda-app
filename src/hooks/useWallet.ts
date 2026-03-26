@@ -1,20 +1,19 @@
 import { useEffect, useState } from 'react';
 import { VCSDK } from 'vc-sdk-headless';
+import { useAuthStore } from '../store/authStore';
 
 export interface WalletCredential {
   id: string;
   title: string;
   feedbackText: string;
   isWarn: boolean;
+  vc: any;
 }
 
 function resolveAgeFeedback(subject: any): string {
-  if (!subject) return '';
-  if (subject.isOver18) return 'Maior de 18 anos';
-  if (subject.isOver16) return 'Entre 16 e 18 anos';
-  if (subject.isOver14) return 'Entre 14 e 16 anos';
-  if (subject.isOver12) return 'Entre 12 e 14 anos';
-  return 'Menor de 12 anos';
+  if (subject?.isOver18 === true)  return 'Maior de 18 anos';
+  if (subject?.isOver18 === false) return 'Menor de 18 anos';
+  return '';
 }
 
 export function useWallet() {
@@ -22,23 +21,32 @@ export function useWallet() {
   const [downloading, setDownloading] = useState(false);
   const [ready, setReady] = useState(false);
 
-  const loadCredentials = async () => {
+  const accessToken = useAuthStore((state) => state.accessToken);
+
+  const loadCredentials = async (): Promise<void> => {
     try {
-      const list = await VCSDK.credentials.getAll();
-      const latest = list.reduce((a: any, b: any) =>
-        new Date(a.metadata?.addedDate) >= new Date(b.metadata?.addedDate) ? a : b
-      , list[0]);
-      const filtered = latest ? [latest] : [];
+      const list: any[] = await VCSDK.credentials.getAll();
+      const byType: Record<string, any> = {};
+
+      for (const vc of list) {
+        const type = vc.type?.find((t: string) => t !== 'VerifiableCredential') || 'Credencial';
+        const existing = byType[type];
+        if (!existing || new Date(vc.metadata?.addedDate) > new Date(existing.metadata?.addedDate)) {
+          byType[type] = vc;
+        }
+      }
+
       setCredentials(
-        filtered.map((vc: any, i: number) => ({
+        Object.values(byType).map((vc: any, i: number) => ({
           id: vc.id || String(i),
           title: vc.metadata?.credentialType?.name || vc.type?.[1] || 'Credencial',
           feedbackText: resolveAgeFeedback(vc.credentialSubject) || vc.metadata?.issuerInfo?.name || vc.issuer || '',
-          isWarn: vc.credentialSubject ? !vc.credentialSubject.isOver18 : false,
+          isWarn: vc.credentialSubject?.isOver18 === false,
+          vc,
         }))
       );
-    } catch {
-      // No credentials yet
+    } catch (e) {
+      console.error('[Wallet] Load credentials failed', e);
     }
   };
 
@@ -47,15 +55,24 @@ export function useWallet() {
     loadCredentials().catch(() => {});
   }, []);
 
-  const downloadCredential = async (issuer: any, type: any) => {
+  const downloadCredential = async (issuer: string, type: string): Promise<void> => {
     setDownloading(true);
     try {
-      await VCSDK.credentials.download(issuer, type);
+      if (!accessToken) throw Object.assign(new Error('[Wallet] Auth required'), { code: 'AUTH_REQUIRED' });
+      const result = await VCSDK.credentials.download(issuer, type, accessToken);
+      if (result === null) throw Object.assign(new Error('[Wallet] Auth required'), { code: 'AUTH_REQUIRED' });
       await loadCredentials();
+    } catch (e) {
+      throw e;
     } finally {
       setDownloading(false);
     }
   };
 
-  return { credentials, downloading, ready, downloadCredential, loadCredentials };
+  const deleteCredential = async (vcId: string): Promise<void> => {
+    await VCSDK.credentials.delete(vcId);
+    await loadCredentials();
+  };
+
+  return { credentials, downloading, ready, downloadCredential, loadCredentials, deleteCredential };
 }
