@@ -34,6 +34,12 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
   hydrate: async () => {
     const data = await getAuthDataFromStorage();
+    const tokenExpired = data?.token?.expiresAt && Date.now() >= data.token.expiresAt;
+    if (tokenExpired) {
+      await clearAllAuthDataFromStorage();
+      set({ isAuthenticated: false, user: null, accessToken: null });
+      return;
+    }
     if (data?.token?.accessToken && data?.user) {
       set({ isAuthenticated: true, user: data.user, accessToken: data.token.accessToken });
     }
