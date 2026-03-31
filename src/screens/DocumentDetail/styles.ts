@@ -25,8 +25,8 @@ export const HeaderTitle = styled.Text`
   color: #000000;
 `;
 
-export const Spacer = styled.View`
-  width: 40px;
+export const CopyButton = styled.TouchableOpacity`
+  padding: 8px;
 `;
 
 export const ScrollContent = styled.ScrollView.attrs({

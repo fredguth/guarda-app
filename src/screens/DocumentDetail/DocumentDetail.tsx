@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Alert, Clipboard } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import DeleteCredentialModal from '../../components/DeleteCredentialModal';
 import {
@@ -6,7 +7,7 @@ import {
   Header,
   BackButton,
   HeaderTitle,
-  Spacer,
+  CopyButton,
   ScrollContent,
   AgeCard,
   AgeIconContainer,
@@ -159,7 +160,12 @@ export default function DocumentDetail({ onBack, credential, onDelete }: Documen
           <Ionicons name="arrow-back" size={24} color="#000" />
         </BackButton>
         <HeaderTitle>Detalhes</HeaderTitle>
-        <Spacer />
+        <CopyButton onPress={() => {
+          Clipboard.setString(JSON.stringify(vc, null, 2));
+          Alert.alert('Copiado', 'JSON da credencial copiado para a área de transferência.');
+        }}>
+          <Ionicons name="copy-outline" size={22} color="#000" />
+        </CopyButton>
       </Header>
 
       <ScrollContent>

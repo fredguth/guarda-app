@@ -23,6 +23,7 @@ import DocumentDetail from './src/screens/DocumentDetail/DocumentDetail';
 import Profile from './src/screens/Profile/Profile';
 import Consent from './src/screens/Consent/Consent';
 import QrScanner from './src/screens/QrScanner/QrScanner';
+import GenerateToken from './src/screens/GenerateToken';
 import Header from './src/components/Header/Header';
 import NoCredentialModal from './src/components/NoCredentialModal';
 import { useAuthStore } from './src/store/authStore';
@@ -92,6 +93,10 @@ export default function App() {
     setCurrentScreen(screen);
   };
 
+  const navigateToGenerateToken = () => {
+    setCurrentScreen('GenerateToken');
+  };
+
   const navigateToDocument = (credential) => {
     setSelectedCredential(credential);
     setCurrentScreen('DocumentDetail');
@@ -134,7 +139,12 @@ export default function App() {
           onNavigateSplash={() => navigateTo('Splash')}
           onNavigateConsent={() => navigateTo('Consent')}
           onNavigateQrScanner={() => navigateTo('QrScanner')}
+          onNavigateGenerateToken={navigateToGenerateToken}
         />
+      )}
+
+      {currentScreen === 'GenerateToken' && (
+        <GenerateToken onBack={() => navigateTo('Home')} />
       )}
 
       {currentScreen === 'AddDocument' && (
