@@ -5,7 +5,7 @@ import { useWallet } from '../../hooks/useWallet';
 import { getAuthDataFromStorage } from '../../components/CustomAuthWebView/authStorage';
 import StackedCards from '../../components/StackedCards';
 import EmptyState from '../../components/EmptyState';
-import { Footer, QRButton, QRButtonText } from './styles';
+import { Footer, QRButton, QRButtonText, TokenButton, TokenButtonText } from './styles';
 
 interface HomeProps {
   onNavigateAdd: () => void;
@@ -13,9 +13,10 @@ interface HomeProps {
   onNavigateSplash: () => void;
   onNavigateConsent: () => void;
   onNavigateQrScanner: () => void;
+  onNavigateGenerateToken: () => void;
 }
 
-export default function Home({ onNavigateAdd, onNavigateDocument, onNavigateQrScanner }: HomeProps) {
+export default function Home({ onNavigateAdd, onNavigateDocument, onNavigateQrScanner, onNavigateGenerateToken }: HomeProps) {
   const { credentials, downloading } = useWallet();
 
   useEffect(() => {
@@ -34,6 +35,10 @@ export default function Home({ onNavigateAdd, onNavigateDocument, onNavigateQrSc
       </View>
 
       <Footer>
+        <TokenButton onPress={onNavigateGenerateToken}>
+          <Ionicons name="key-outline" size={24} color="#FFF" />
+          <TokenButtonText>Gerar Token</TokenButtonText>
+        </TokenButton>
         <QRButton onPress={onNavigateQrScanner}>
           <Ionicons name="qr-code-outline" size={24} color="#FFF" />
           <QRButtonText>Ler QR-Code</QRButtonText>

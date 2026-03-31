@@ -25,3 +25,20 @@ export const QRButtonText = styled.Text`
   margin-left: 8px;
 `;
 
+
+export const TokenButton = styled.TouchableOpacity`
+  background-color: #4C1D95;
+  border-radius: 100px;
+  padding: ${isLargeScreen ? '18px' : '16px'} 0;
+  align-items: center;
+  flex-direction: row;
+  justify-content: center;
+  margin-bottom: 12px;
+`;
+
+export const TokenButtonText = styled.Text`
+  font-size: ${isLargeScreen ? '18px' : '16px'};
+  font-weight: 700;
+  color: #ffffff;
+  margin-left: 8px;
+`;
