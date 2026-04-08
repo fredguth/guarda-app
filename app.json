@@ -25,6 +25,7 @@
         "backgroundColor": "#ffffff",
         "foregroundImage": "./assets/icon.png"
       },
+      "versionCode": 2,
       "package": "com.anonymous.guarda",
       "intentFilters": [
         {
