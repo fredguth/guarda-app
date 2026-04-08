@@ -3,7 +3,7 @@
     "name": "Carteira",
     "slug": "Carteira",
     "scheme": "openid4vp",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -52,7 +52,13 @@
     },
     "plugins": [
       "expo-local-authentication",
-      "expo-secure-store"
-    ]
+      "expo-secure-store",
+      "./plugins/withReleaseSigning"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "942c8b88-b8f4-4fe2-8efd-c59a803c0f6b"
+      }
+    }
   }
 }
