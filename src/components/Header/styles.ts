@@ -1,13 +1,15 @@
 import styled from 'styled-components/native';
-import { StatusBar } from 'react-native';
+import { Platform, StatusBar } from 'react-native';
 import GuardaLogo from '../../../assets/carteira_documentos_logo.svg';
+
+const topPadding = Platform.OS === 'ios' ? 60 : (StatusBar.currentHeight ? StatusBar.currentHeight + 20 : 20);
 
 export const HeaderContainer = styled.View`
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
   padding: 20px 24px;
-  padding-top: ${StatusBar.currentHeight ? StatusBar.currentHeight + 20 : 20}px;
+  padding-top: ${topPadding}px;
 `;
 
 export const HeaderTitleContainer = styled.View`
