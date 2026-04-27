@@ -98,6 +98,25 @@ async function resolveShareUrl(params: DeepLinkParams): Promise<string> {
   );
 }
 
+export interface GenerateTokenRequest {
+  nonce: string;
+  callbackScheme: string;
+}
+
+export function parseGenerateTokenLink(url: string): GenerateTokenRequest | null {
+  try {
+    const parsed = new URL(url);
+    // openid4vp://generate-token?nonce=ABC&callback=brejame
+    if (parsed.hostname !== 'generate-token') return null;
+    const nonce = parsed.searchParams.get('nonce');
+    const callback = parsed.searchParams.get('callback');
+    if (!nonce || !callback) return null;
+    return { nonce, callbackScheme: callback };
+  } catch {
+    return null;
+  }
+}
+
 export async function handleDeepLink(url: string): Promise<{ appName: string }> {
   const params = parseDeepLinkParams(url);
   const origin = params.origin ?? '';

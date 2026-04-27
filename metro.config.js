@@ -12,6 +12,18 @@ config.resolver.nodeModulesPaths = [
   path.resolve(sdkPath, "node_modules"),
 ];
 
+config.resolver.unstable_enablePackageExports = false;
+
+config.resolver.resolveRequest = (context, moduleName, platform) => {
+  // Strip .js extension from relative imports inside the SDK so Metro can resolve them
+  if (moduleName.endsWith('.js') && !moduleName.includes('node_modules')) {
+    try {
+      return context.resolveRequest(context, moduleName.slice(0, -3), platform);
+    } catch (_) {}
+  }
+  return context.resolveRequest(context, moduleName, platform);
+};
+
 // SVG transformer
 config.transformer.babelTransformerPath = require.resolve(
   "react-native-svg-transformer",

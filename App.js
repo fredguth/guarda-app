@@ -3,7 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import { Linking } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { handleDeepLink, PENDING_KEY } from './src/services/deepLinkHandler';
+import { handleDeepLink, parseGenerateTokenLink, PENDING_KEY } from './src/services/deepLinkHandler';
 import { isUserAuthenticated } from './src/components/CustomAuthWebView/authStorage';
 import { VCSDK } from 'vc-sdk-headless';
 
@@ -23,6 +23,7 @@ import DocumentDetail from './src/screens/DocumentDetail/DocumentDetail';
 import Profile from './src/screens/Profile/Profile';
 import Consent from './src/screens/Consent/Consent';
 import QrScanner from './src/screens/QrScanner/QrScanner';
+import GenerateToken from './src/screens/GenerateToken/GenerateToken';
 import Header from './src/components/Header/Header';
 import NoCredentialModal from './src/components/NoCredentialModal';
 import { useAuthStore } from './src/store/authStore';
@@ -33,6 +34,7 @@ export default function App() {
   const [selectedCredential, setSelectedCredential] = React.useState(null);
   const [pendingConsent, setPendingConsent] = React.useState(null);
   const [showNoCredentialModal, setShowNoCredentialModal] = React.useState(false);
+  const [pendingToken, setPendingToken] = React.useState(null); // { nonce, callbackScheme }
   const login = useAuthStore((state) => state.login);
   const hydrate = useAuthStore((state) => state.hydrate);
 
@@ -50,6 +52,13 @@ export default function App() {
   const processDeepLink = React.useCallback(async (url) => {
     if (!url || !url.startsWith('openid4vp://') || url.includes('expo-development-client')) return;
     try {
+      // Verificar se é um deep link de geração de token (OTP flow)
+      const tokenRequest = parseGenerateTokenLink(url);
+      if (tokenRequest) {
+        setPendingToken(tokenRequest);
+        setCurrentScreen('GenerateToken');
+        return;
+      }
       const { appName } = await handleDeepLink(url);
       await navigateToConsent(appName);
     } catch (e) {
@@ -60,10 +69,12 @@ export default function App() {
   React.useEffect(() => {
     AsyncStorage.removeItem(PENDING_KEY).catch(() => {});
     hydrate();
-    isUserAuthenticated().then(async (auth) => {
-      if (!auth) return;
+    Linking.getInitialURL().then((url) => {
+      if (url && url.startsWith('openid4vp://') && !url.includes('expo-development-client')) {
+        setCurrentScreen('Home');
+        processDeepLink(url);
+      }
     });
-    Linking.getInitialURL().then((url) => { if (url) processDeepLink(url); });
     const sub = Linking.addEventListener('url', ({ url }) => processDeepLink(url));
     return () => sub.remove();
   }, [processDeepLink]);
@@ -173,6 +184,15 @@ export default function App() {
           appName={pendingConsent?.appName}
           onClose={() => navigateTo('Home')}
           onConfirm={() => navigateTo('Home')}
+        />
+      )}
+
+      {currentScreen === 'GenerateToken' && pendingToken && (
+        <GenerateToken
+          nonce={pendingToken.nonce}
+          callbackScheme={pendingToken.callbackScheme}
+          onClose={() => { setPendingToken(null); navigateTo('Home'); }}
+          onLoginRequired={() => handleLoginRequired('GenerateToken')}
         />
       )}
       </View>
