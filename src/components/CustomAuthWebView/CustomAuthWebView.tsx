@@ -2,8 +2,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { CustomAuthWebViewProps, PkceData } from './types';
-import { saveCallbackParams, saveTokenData, saveUserData } from './authStorage';
-import { generatePkce, buildAuthorizationUrl, fetchToken, fetchUserInfo, getOAuthConfig } from './authService';
+import { saveCallbackParams, saveUserData } from './authStorage';
+import * as SecureStore from 'expo-secure-store';
+import { generatePkce, buildAuthorizationUrl, fetchUserProfile, getOAuthConfig } from './authService';
 import { Container, Header, BackButton, HeaderTitle, InitContainer, StyledWebView, LoadingOverlay, LoadingText } from './styles';
 
 export const CustomAuthWebView: React.FC<CustomAuthWebViewProps> = ({ onSuccess, onError, onCancel }) => {
@@ -20,13 +21,11 @@ export const CustomAuthWebView: React.FC<CustomAuthWebViewProps> = ({ onSuccess,
   const handleAuthorizationCode = async (code: string, currentPkce: PkceData) => {
     setIsAuthenticating(true);
     try {
-      const token = await fetchToken(code, currentPkce);
-      await saveTokenData(token);
-
-      const user = await fetchUserInfo(token.access_token);
+      const response = await fetchUserProfile(code, currentPkce);
+      const { accessToken, ...user } = response;
       await saveUserData(user);
-
-      onSuccess({ user, accessToken: token.access_token });
+      if (accessToken) await SecureStore.setItemAsync('access_token', accessToken, { keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY });
+      onSuccess({ user, accessToken: accessToken ?? null });
     } catch (error: any) {
       onError(error?.message || 'Authentication failed');
     } finally {

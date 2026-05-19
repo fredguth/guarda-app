@@ -38,7 +38,6 @@ export const saveTokenData = async (token: any): Promise<void> => {
     AsyncStorage.setItem('expires_at', expiresAt),
     AsyncStorage.setItem('scope',      token.scope || ''),
   ]);
-  const saved = await SecureStore.getItemAsync('access_token');
 };
 
 export const saveUserData = async (user: any): Promise<void> => {
@@ -89,18 +88,9 @@ export const clearAllAuthDataFromStorage = async (): Promise<void> => {
     ...SECURE_KEYS.map(k => SecureStore.deleteItemAsync(k, SECURE_OPTS)),
     AsyncStorage.multiRemove([...META_KEYS]),
   ]);
-  const tokenAfter = await SecureStore.getItemAsync('access_token');
 };
 
 export const isUserAuthenticated = async (): Promise<boolean> => {
-  const [token, expiresAt] = await Promise.all([
-    SecureStore.getItemAsync('access_token'),
-    AsyncStorage.getItem('expires_at'),
-  ]);
-  if (!token) return false;
-  if (expiresAt && Date.now() > parseInt(expiresAt)) {
-    await clearAllAuthDataFromStorage();
-    return false;
-  }
-  return true;
+  const userData = await SecureStore.getItemAsync('user_data');
+  return !!userData;
 };

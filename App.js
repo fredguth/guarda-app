@@ -4,7 +4,6 @@ import { Linking } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { handleDeepLink, PENDING_KEY } from './src/services/deepLinkHandler';
-import { isUserAuthenticated } from './src/components/CustomAuthWebView/authStorage';
 import { VCSDK } from 'vc-sdk-headless';
 
 async function hasAgeCredential() {
@@ -36,16 +35,18 @@ export default function App() {
   const login = useAuthStore((state) => state.login);
   const hydrate = useAuthStore((state) => state.hydrate);
 
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
   const navigateToConsent = React.useCallback(async (appName) => {
     setPendingConsent({ appName });
-    const [auth, hasAge] = await Promise.all([isUserAuthenticated(), hasAgeCredential()]);
-    if (auth || hasAge) {
+    const hasAge = await hasAgeCredential();
+    if (isAuthenticated || hasAge) {
       setCurrentScreen('Consent');
     } else {
       setPendingScreen('Consent');
       setShowNoCredentialModal(true);
     }
-  }, []);
+  }, [isAuthenticated]);
 
   const processDeepLink = React.useCallback(async (url) => {
     if (!url || !url.startsWith('openid4vp://') || url.includes('expo-development-client')) return;
@@ -60,9 +61,6 @@ export default function App() {
   React.useEffect(() => {
     AsyncStorage.removeItem(PENDING_KEY).catch(() => {});
     hydrate();
-    isUserAuthenticated().then(async (auth) => {
-      if (!auth) return;
-    });
     Linking.getInitialURL().then((url) => { if (url) processDeepLink(url); });
     const sub = Linking.addEventListener('url', ({ url }) => processDeepLink(url));
     return () => sub.remove();

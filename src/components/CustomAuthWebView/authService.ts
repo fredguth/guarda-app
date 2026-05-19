@@ -3,12 +3,10 @@ import { PkceData } from './types';
 
 export const getOAuthConfig = () => ({
   authorizationUrl: process.env.EXPO_PUBLIC_OAUTH_AUTHORIZATION_URL!,
-  tokenUrl:         process.env.EXPO_PUBLIC_OAUTH_TOKEN_URL!,
-  userInfoUrl:      process.env.EXPO_PUBLIC_OAUTH_USER_INFO_URL!,
   clientId:         process.env.EXPO_PUBLIC_OAUTH_CLIENT_ID!,
-  clientSecret:     process.env.EXPO_PUBLIC_OAUTH_CLIENT_SECRET!,
   redirectUri:      process.env.EXPO_PUBLIC_OAUTH_REDIRECT_URI!,
   scopes:           'openid email profile govbr_confiabilidades',
+  mimotoUrl:        process.env.EXPO_PUBLIC_MIMOTO_URL!,
 });
 
 const toBase64Url = (buffer: ArrayBuffer): string => {
@@ -44,40 +42,20 @@ export const buildAuthorizationUrl = (pkce: PkceData): string => {
   return url.toString();
 };
 
-export const fetchToken = async (code: string, pkce: PkceData): Promise<any> => {
+export const fetchUserProfile = async (code: string, pkce: PkceData): Promise<any> => {
   const cfg = getOAuthConfig();
-  const response = await fetch(cfg.tokenUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      Authorization: `Basic ${btoa(`${cfg.clientId}:${cfg.clientSecret}`)}`,
-    },
-    body: new URLSearchParams({
-      grant_type:    'authorization_code',
-      code,
-      code_verifier: pkce.codeVerifier,
-      redirect_uri:  cfg.redirectUri,
-    }).toString(),
-  });
+  const url = new URL(`${cfg.mimotoUrl}/v1/mimoto/user/profile`);
+  url.searchParams.set('code', code);
+  url.searchParams.set('codeVerifier', pkce.codeVerifier);
+  url.searchParams.set('redirectUri', cfg.redirectUri);
+
+  const response = await fetch(url.toString());
 
   if (!response.ok) {
     const errorBody = await response.text();
-    throw new Error(`Token request failed: ${response.status} - ${errorBody}`);
+    throw new Error(`Profile request failed: ${response.status} - ${errorBody}`);
   }
 
-  return await response.json();
-};
-
-export const fetchUserInfo = async (accessToken: string): Promise<any> => {
-  const cfg = getOAuthConfig();
-  const response = await fetch(cfg.userInfoUrl, {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
-
-  if (!response.ok) {
-    const errorBody = await response.text();
-    throw new Error(`User info request failed: ${response.status} - ${errorBody}`);
-  }
-
-  return await response.json();
+  const json = await response.json();
+  return json.data;
 };
