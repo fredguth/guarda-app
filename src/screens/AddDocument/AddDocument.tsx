@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FlatList, ActivityIndicator } from 'react-native';
+import { FlatList, ActivityIndicator, TouchableOpacity, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useIssuers } from '../../hooks/useIssuers';
 import { useWallet } from '../../hooks/useWallet';
@@ -21,6 +21,7 @@ import {
 } from './styles';
 
 interface AddDocumentProps {
+  sdkReady?: boolean;
   onBack: () => void;
   onLoginRequired?: () => void;
 }
@@ -32,13 +33,13 @@ interface DocumentItem {
   type: any;
 }
 
-export default function AddDocument({ onBack, onLoginRequired }: AddDocumentProps) {
+export default function AddDocument({ sdkReady, onBack, onLoginRequired }: AddDocumentProps) {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [showNoCredentialModal, setShowNoCredentialModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const { sections, loading } = useIssuers(true);
-  const { downloadCredential, downloading } = useWallet();
+  const { sections, loading, reload } = useIssuers(sdkReady ?? false);
+  const { downloadCredential, downloading } = useWallet(sdkReady ?? false);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   const showError = (message: string) => {
@@ -60,15 +61,6 @@ export default function AddDocument({ onBack, onLoginRequired }: AddDocumentProp
     }
   };
 
-  const documents: DocumentItem[] = sections.flatMap((section) =>
-    section.data.map((type: any, i: number) => ({
-      id: `${section.issuer.id}-${i}`,
-      title: type.name || type.id,
-      issuer: section.issuer,
-      type,
-    }))
-  );
-
   const renderItem = ({ item }: { item: DocumentItem }) => (
     <Card
       available
@@ -79,15 +71,21 @@ export default function AddDocument({ onBack, onLoginRequired }: AddDocumentProp
     >
       <CardLeft>
         <CardIconContainer>
-          <Ionicons name="shield-checkmark" size={28} color="#FFF" />
+          <Ionicons name="shield-checkmark" size={24} color="#FFF" />
         </CardIconContainer>
-        <CardTitle available>{item.title}</CardTitle>
+        <CardTitle numberOfLines={2}>{item.title}</CardTitle>
       </CardLeft>
       {downloading
-        ? <ActivityIndicator color="#FFF" />
-        : <CardAction available>Adicionar</CardAction>
+        ? <ActivityIndicator color="#FFF" size="small" />
+        : <CardAction>Adicionar</CardAction>
       }
     </Card>
+  );
+
+  const renderSectionHeader = (title: string) => (
+    <Text style={{ fontSize: 13, fontWeight: '600', color: '#6B7280', marginBottom: 8, marginTop: 4 }}>
+      {title.toUpperCase()}
+    </Text>
   );
 
   return (
@@ -101,11 +99,30 @@ export default function AddDocument({ onBack, onLoginRequired }: AddDocumentProp
       </Header>
 
       <FlatList
-        data={documents}
-        keyExtractor={(item) => item.id}
-        renderItem={renderItem}
-        contentContainerStyle={{ padding: 20 }}
+        data={sections}
+        keyExtractor={(section) => section.issuer.id}
+        contentContainerStyle={{ padding: 16 }}
         showsVerticalScrollIndicator={false}
+        renderItem={({ item: section }) => (
+          <View>
+            {sections.length > 1 && renderSectionHeader(section.title)}
+            {section.data.map((type: any, i: number) =>
+              renderItem({ item: {
+                id: `${section.issuer.id}-${i}`,
+                title: type.name || type.id,
+                issuer: section.issuer,
+                type,
+              }})
+            )}
+          </View>
+        )}
+        ListEmptyComponent={
+          !loading ? (
+            <TouchableOpacity onPress={reload} style={{ alignItems: 'center', marginTop: 40, padding: 16 }}>
+              <Text style={{ color: '#3B82F6', fontSize: 15 }}>Nenhum documento disponível. Toque para tentar novamente.</Text>
+            </TouchableOpacity>
+          ) : null
+        }
         ListHeaderComponent={
           loading ? <ActivityIndicator size="large" color="#3B82F6" style={{ marginVertical: 20 }} /> : null
         }

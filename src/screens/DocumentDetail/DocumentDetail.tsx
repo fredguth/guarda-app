@@ -59,8 +59,10 @@ function resolveIssuerName(vc: any): string {
 function resolveCredentialType(vc: any): string {
   const types: string[] = vc?.type || [];
   if (types.includes('CAFCredential')) return 'CAF';
+  if (types.includes('CARReceipt')) return 'CAR';
+  if (types.includes('CCIRCredential')) return 'CCIR';
   if (types.includes('ECACredential') || types.includes('AgeVerificationCredential')) return 'Maioridade';
-  return 'Credencial';
+  return types.find((t: string) => t !== 'VerifiableCredential') || 'Credencial';
 }
 
 function resolveAgeInfo(subject: any): AgeInfo {
@@ -94,6 +96,42 @@ function AgeSection({ subject }: { subject: any }) {
         </StatusBadge>
       )}
     </AgeCard>
+  );
+}
+
+function isPlaceholder(value: any): boolean {
+  if (!value || typeof value !== 'string') return true;
+  return value.includes('${');
+}
+
+function CARSection({ subject }: { subject: any }) {
+  return (
+    <>
+      <SectionTitle>Dados do Imóvel</SectionTitle>
+      <InfoCard>
+        {!isPlaceholder(subject.nomeImovel) && <InfoRow><InfoLabel>Nome</InfoLabel><InfoValue>{subject.nomeImovel}</InfoValue></InfoRow>}
+        {!isPlaceholder(subject.municipio) && <InfoRow bordered><InfoLabel>Município</InfoLabel><InfoValue>{subject.municipio}{!isPlaceholder(subject.unidadefederativa) ? ` - ${subject.unidadefederativa}` : ''}</InfoValue></InfoRow>}
+        {!isPlaceholder(subject.protocolo) && <InfoRow bordered><InfoLabel>Protocolo</InfoLabel><InfoValue>{subject.protocolo}</InfoValue></InfoRow>}
+        {!isPlaceholder(subject.areaTotalImovel) && <InfoRow bordered><InfoLabel>Área Total</InfoLabel><InfoValue>{subject.areaTotalImovel} ha</InfoValue></InfoRow>}
+        {!isPlaceholder(subject.nomeProprietario) && <InfoRow><InfoLabel>Proprietário</InfoLabel><InfoValue>{subject.nomeProprietario}</InfoValue></InfoRow>}
+      </InfoCard>
+    </>
+  );
+}
+
+function CCIRSection({ subject }: { subject: any }) {
+  return (
+    <>
+      <SectionTitle>Dados do Imóvel</SectionTitle>
+      <InfoCard>
+        {!isPlaceholder(subject.nomeImovel || subject.denominacao) && <InfoRow><InfoLabel>Nome</InfoLabel><InfoValue>{subject.nomeImovel || subject.denominacao}</InfoValue></InfoRow>}
+        {!isPlaceholder(subject.codigoImovel || subject.numeroCCIR) && <InfoRow bordered><InfoLabel>Código</InfoLabel><InfoValue>{subject.codigoImovel || subject.numeroCCIR}</InfoValue></InfoRow>}
+        {!isPlaceholder(subject.municipio) && <InfoRow bordered><InfoLabel>Município</InfoLabel><InfoValue>{subject.municipio}{!isPlaceholder(subject.unidadefederativa || subject.unidadeFederativa) ? ` - ${subject.unidadefederativa || subject.unidadeFederativa}` : ''}</InfoValue></InfoRow>}
+        {!isPlaceholder(subject.areaTotalImovel) && <InfoRow bordered><InfoLabel>Área Total</InfoLabel><InfoValue>{subject.areaTotalImovel} ha</InfoValue></InfoRow>}
+        {!isPlaceholder(subject.situacaoImovel) && <InfoRow bordered><InfoLabel>Situação</InfoLabel><InfoValue>{subject.situacaoImovel}</InfoValue></InfoRow>}
+        {!isPlaceholder(subject.nomeProprietario) && <InfoRow><InfoLabel>Proprietário</InfoLabel><InfoValue>{subject.nomeProprietario}</InfoValue></InfoRow>}
+      </InfoCard>
+    </>
   );
 }
 
@@ -173,6 +211,8 @@ export default function DocumentDetail({ onBack, credential, onDelete }: Documen
           <InfoRow><InfoLabel>Validade</InfoLabel><InfoValue>{formatDate(vc.expirationDate) || 'Indeterminada'}</InfoValue></InfoRow>
         </InfoCard>
 
+        {credType === 'CAR' && <CARSection subject={subject} />}
+        {credType === 'CCIR' && <CCIRSection subject={subject} />}
         {credType === 'CAF' && <CAFSection subject={subject} />}
 
         <DeleteButton onPress={() => setShowDeleteModal(true)}>

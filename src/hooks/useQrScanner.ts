@@ -2,16 +2,25 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCameraPermissions } from 'expo-camera';
 import { useRef, useState } from 'react';
 import { Alert } from 'react-native';
-import { PENDING_KEY } from '../services/deepLinkHandler';
+import { PENDING_KEY, RequestedField } from '../services/deepLinkHandler';
 
 interface ShareUrlResult {
   shareUrl: string;
   appName: string;
   requestId: string;
+  requestedFields: RequestedField[];
 }
 
 interface UseQrScannerProps {
   onScanned: (appName: string) => void;
+}
+
+function extractFieldsFromDescriptors(descriptors: any[]): RequestedField[] {
+  return (descriptors || []).map((d: any) => ({
+    id: d.id,
+    name: d.name || d.id,
+    type: d.constraints?.fields?.find((f: any) => f.path?.includes('$.type'))?.filter?.pattern ?? d.id,
+  }));
 }
 
 function buildShareUrlFromJson(payload: any): ShareUrlResult | null {
@@ -25,12 +34,13 @@ function buildShareUrlFromJson(payload: any): ShareUrlResult | null {
     ? auth.responseUri
     : `${clientId}${auth.responseUri ?? ''}`;
 
+  const pd = auth.presentationDefinition ?? {};
   const params = new URLSearchParams({
     response_type: auth.responseType ?? 'vp_token',
     client_id: clientId,
     redirect_uri: responseUri,
     response_mode: 'direct_post',
-    presentation_definition: JSON.stringify(auth.presentationDefinition ?? {}),
+    presentation_definition: JSON.stringify(pd),
     nonce,
     state: transactionId,
   });
@@ -38,7 +48,12 @@ function buildShareUrlFromJson(payload: any): ShareUrlResult | null {
   let appName = 'Verificador';
   try { appName = new URL(clientId).hostname || 'Verificador'; } catch {}
 
-  return { shareUrl: `openid4vp://?${params.toString()}`, appName, requestId: transactionId };
+  return {
+    shareUrl: `openid4vp://?${params.toString()}`,
+    appName,
+    requestId: transactionId,
+    requestedFields: extractFieldsFromDescriptors(pd.input_descriptors),
+  };
 }
 
 function resolveAppName(clientId: string): string {
@@ -52,8 +67,8 @@ export function useQrScanner({ onScanned }: UseQrScannerProps) {
   const [scanned, setScanned] = useState(false);
   const processingRef = useRef(false);
 
-  async function savePendingAndNavigate(appName: string, shareUrl: string, requestId = ''): Promise<void> {
-    await AsyncStorage.setItem(PENDING_KEY, JSON.stringify({ appName, shareUrl, origin: '', requestId }));
+  async function savePendingAndNavigate(appName: string, shareUrl: string, requestId = '', requestedFields: RequestedField[] = []): Promise<void> {
+    await AsyncStorage.setItem(PENDING_KEY, JSON.stringify({ appName, shareUrl, origin: '', requestId, requestedFields }));
     onScanned(appName);
   }
 
@@ -61,14 +76,19 @@ export function useQrScanner({ onScanned }: UseQrScannerProps) {
     const json = JSON.parse(data);
     const result = buildShareUrlFromJson(json);
     if (!result) throw new Error('invalid');
-    await savePendingAndNavigate(result.appName, result.shareUrl, result.requestId);
+    await savePendingAndNavigate(result.appName, result.shareUrl, result.requestId, result.requestedFields);
   }
 
   async function handleOpenId4VpQr(data: string): Promise<void> {
     const [, query] = data.split('?');
     const params = new URLSearchParams(query || '');
     const clientId = params.get('client_id') ?? '';
-    await savePendingAndNavigate(resolveAppName(clientId), data);
+    let requestedFields: RequestedField[] = [];
+    try {
+      const pd = JSON.parse(params.get('presentation_definition') || '{}');
+      requestedFields = extractFieldsFromDescriptors(pd.input_descriptors);
+    } catch {}
+    await savePendingAndNavigate(resolveAppName(clientId), data, '', requestedFields);
   }
 
   async function handleScan(data: string): Promise<void> {

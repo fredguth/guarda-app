@@ -2,8 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { CustomAuthWebViewProps, PkceData } from './types';
-import { saveCallbackParams, saveUserData } from './authStorage';
-import * as SecureStore from 'expo-secure-store';
+import { saveCallbackParams, saveUserData, saveTokenData } from './authStorage';
 import { generatePkce, buildAuthorizationUrl, fetchUserProfile, getOAuthConfig } from './authService';
 import { Container, Header, BackButton, HeaderTitle, InitContainer, StyledWebView, LoadingOverlay, LoadingText } from './styles';
 
@@ -24,7 +23,12 @@ export const CustomAuthWebView: React.FC<CustomAuthWebViewProps> = ({ onSuccess,
       const response = await fetchUserProfile(code, currentPkce);
       const { accessToken, ...user } = response;
       await saveUserData(user);
-      if (accessToken) await SecureStore.setItemAsync('access_token', accessToken, { keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY });
+      if (accessToken) {
+        await saveTokenData({ access_token: accessToken });
+      } else {
+        console.warn('[CustomAuthWebView] No accessToken in mimoto response — token will NOT be saved.');
+      }
+
       onSuccess({ user, accessToken: accessToken ?? null });
     } catch (error: any) {
       onError(error?.message || 'Authentication failed');

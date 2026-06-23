@@ -8,6 +8,7 @@ import EmptyState from '../../components/EmptyState';
 import { Footer, QRButton, QRButtonText } from './styles';
 
 interface HomeProps {
+  sdkReady?: boolean;
   onNavigateAdd: () => void;
   onNavigateDocument: (credential: any) => void;
   onNavigateSplash: () => void;
@@ -15,8 +16,8 @@ interface HomeProps {
   onNavigateQrScanner: () => void;
 }
 
-export default function Home({ onNavigateAdd, onNavigateDocument, onNavigateQrScanner }: HomeProps) {
-  const { credentials, downloading } = useWallet();
+export default function Home({ sdkReady, onNavigateAdd, onNavigateDocument, onNavigateQrScanner }: HomeProps) {
+  const { credentials, downloading } = useWallet(sdkReady ?? false);
 
   useEffect(() => {
     getAuthDataFromStorage();
