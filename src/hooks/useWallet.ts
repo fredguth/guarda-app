@@ -16,7 +16,7 @@ function resolveAgeFeedback(subject: any): string {
   return '';
 }
 
-export function useWallet() {
+export function useWallet(enabled: boolean = true) {
   const [credentials, setCredentials] = useState<WalletCredential[]>([]);
   const [downloading, setDownloading] = useState(false);
   const [ready, setReady] = useState(false);
@@ -51,9 +51,10 @@ export function useWallet() {
   };
 
   useEffect(() => {
+    if (!enabled) return;
     setReady(true);
     loadCredentials().catch(() => {});
-  }, []);
+  }, [enabled]);
 
   const downloadCredential = async (issuer: string, type: string): Promise<void> => {
     setDownloading(true);

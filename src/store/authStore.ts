@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import * as SecureStore from 'expo-secure-store';
 import { getAuthDataFromStorage, clearAllAuthDataFromStorage } from '../components/CustomAuthWebView/authStorage';
 
 interface User {
@@ -35,7 +36,8 @@ export const useAuthStore = create<AuthState>((set) => ({
   hydrate: async () => {
     const data = await getAuthDataFromStorage();
     if (data?.user) {
-      set({ isAuthenticated: true, user: data.user, accessToken: null });
+      const accessToken = await SecureStore.getItemAsync('access_token').catch(() => null);
+      set({ isAuthenticated: true, user: data.user, accessToken });
     }
   },
 }));

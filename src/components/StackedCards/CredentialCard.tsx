@@ -49,7 +49,23 @@ function getCredentialInfo(cred: any) {
     return { title: 'Credencial de Faixa Etária', subtitle, isWarn: isOver18 === false };
   }
 
-  return { title: 'Credencial', subtitle: cred.vc?.issuer || '', isWarn: false };
+  if (types.includes('CARReceipt')) {
+    const nome = subject?.nomeImovel || 'Imóvel Rural';
+    const municipio = subject?.municipio || '';
+    const subtitle = municipio ? `${nome} — ${municipio}` : nome;
+    return { title: 'Recibo CAR', subtitle, isWarn: false };
+  }
+
+  if (types.includes('CCIRCredential')) {
+    const nome = subject?.nomeImovel || subject?.denominacao || 'Imóvel Rural';
+    const municipio = subject?.municipio || '';
+    const subtitle = municipio ? `${nome} — ${municipio}` : nome;
+    return { title: 'CCIR', subtitle, isWarn: false };
+  }
+
+  const typeName = types.find((t: string) => t !== 'VerifiableCredential') || 'Credencial';
+  const subtitle = subject?.nomeImovel || subject?.nome || subject?.name || subject?.municipio || cred.vc?.issuer || '';
+  return { title: typeName, subtitle, isWarn: false };
 }
 
 export interface CredentialCardProps {

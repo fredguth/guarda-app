@@ -6,14 +6,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { handleDeepLink, PENDING_KEY } from './src/services/deepLinkHandler';
 import { VCSDK } from 'vc-sdk-headless';
 
-async function hasAgeCredential() {
-  try {
-    const list = await VCSDK.credentials.getAll();
-    return list.some((vc) => vc.type?.includes('ECACredential') || vc.type?.includes('AgeVerificationCredential'));
-  } catch {
-    return false;
-  }
-}
+// crypto.subtle shim for jsonld - must run after native modules are ready
+import './src/polyfills';
+
 import Splash from './src/screens/Splash/Splash';
 import Login from './src/screens/Login/Login';
 import Home from './src/screens/Home/Home';
@@ -39,14 +34,13 @@ export default function App() {
 
   const navigateToConsent = React.useCallback(async (appName) => {
     setPendingConsent({ appName });
-    const hasAge = await hasAgeCredential();
-    if (isAuthenticated || hasAge) {
+    if (useAuthStore.getState().isAuthenticated) {
       setCurrentScreen('Consent');
     } else {
       setPendingScreen('Consent');
       setShowNoCredentialModal(true);
     }
-  }, [isAuthenticated]);
+  }, []);
 
   const processDeepLink = React.useCallback(async (url) => {
     if (!url || !url.startsWith('openid4vp://') || url.includes('expo-development-client')) return;
@@ -66,6 +60,8 @@ export default function App() {
     return () => sub.remove();
   }, [processDeepLink]);
 
+  const [sdkReady, setSdkReady] = React.useState(false);
+
   React.useEffect(() => {
     const SDK_CONFIG = {
       appId: 'Carteira-wallet',
@@ -83,7 +79,26 @@ export default function App() {
       },
       storage: { encrypted: true },
     };
-    VCSDK.init(SDK_CONFIG).catch(() => {});
+
+    let attempts = 0;
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY = 3000;
+
+    const tryInit = () => {
+      attempts++;
+      VCSDK.init(SDK_CONFIG)
+        .then(() => { console.log('[App] SDK initialized'); setSdkReady(true); })
+        .catch((e) => {
+          console.error(`[App] SDK init failed (attempt ${attempts}/${MAX_RETRIES})`, e);
+          if (attempts < MAX_RETRIES) {
+            setTimeout(tryInit, RETRY_DELAY);
+          } else {
+            console.error('[App] SDK init gave up after max retries');
+            setSdkReady(true);
+          }
+        });
+    };
+    tryInit();
   }, []);
 
   const navigateTo = (screen) => {
@@ -127,6 +142,7 @@ export default function App() {
       
       {currentScreen === 'Home' && (
         <Home
+          sdkReady={sdkReady}
           onNavigateAdd={() => navigateTo('AddDocument')}
           onNavigateDocument={navigateToDocument}
           onNavigateSplash={() => navigateTo('Splash')}
@@ -136,7 +152,7 @@ export default function App() {
       )}
 
       {currentScreen === 'AddDocument' && (
-        <AddDocument onBack={() => navigateTo('Home')} onLoginRequired={() => handleLoginRequired('AddDocument')} />
+        <AddDocument sdkReady={sdkReady} onBack={() => navigateTo('Home')} onLoginRequired={() => handleLoginRequired('AddDocument')} />
       )}
 
       {currentScreen === 'DocumentDetail' && (
