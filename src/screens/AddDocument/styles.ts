@@ -37,9 +37,9 @@ export const Card = styled.TouchableOpacity<{ available: boolean; cardColor: str
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  padding: 20px;
+  padding: 14px 16px;
   border-radius: 16px;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   background-color: ${({ cardColor }) => cardColor};
 `;
 
@@ -47,20 +47,25 @@ export const CardLeft = styled.View`
   flex-direction: row;
   align-items: center;
   flex: 1;
+  margin-right: 8px;
 `;
 
 export const CardIconContainer = styled.View`
-  margin-right: 16px;
+  margin-right: 12px;
+  flex-shrink: 0;
 `;
 
 export const CardTitle = styled.Text`
-  font-size: 16px;
+  font-size: 13px;
   font-weight: 700;
   color: #ffffff;
+  flex-shrink: 1;
+  flex-wrap: wrap;
 `;
 
 export const CardAction = styled.Text`
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: #ffffff;
+  flex-shrink: 0;
 `;

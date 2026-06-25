@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Alert, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as LocalAuthentication from 'expo-local-authentication';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { executeShare, declineShare } from '../../services/shareService';
-import { PENDING_KEY } from '../../services/deepLinkHandler';
+import { PENDING_KEY, RequestedField } from '../../services/deepLinkHandler';
 import {
   Container,
   Header,
@@ -47,21 +47,35 @@ interface PendingShare {
   appName?: string;
   shareUrl?: string;
   origin?: string;
+  requestedFields?: RequestedField[];
+}
+
+const CREDENTIAL_LABELS: Record<string, string> = {
+  ECACredential: 'Maior de 18 anos',
+  AgeVerificationCredential: 'Maior de 18 anos',
+  CARReceipt: 'Recibo CAR (Imóvel Rural)',
+  CCIRCredential: 'CCIR (Imóvel Rural)',
+  CAFCredential: 'CAF (Agricultura Familiar)',
+};
+
+function getFieldLabel(field: RequestedField): string {
+  return CREDENTIAL_LABELS[field.type] || field.name || field.id;
 }
 
 export default function Consent({ appName, onClose, onConfirm }: ConsentProps) {
   const insets = useSafeAreaInsets();
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [loading, setLoading] = useState(false);
-  const pendingRef = useRef<PendingShare | null>(null);
+  const [pending, setPending] = useState<PendingShare | null>(null);
 
   useEffect(() => {
     AsyncStorage.getItem(PENDING_KEY)
-      .then((saved) => { if (saved) pendingRef.current = JSON.parse(saved); })
+      .then((saved) => { if (saved) setPending(JSON.parse(saved)); })
       .catch(() => {});
   }, []);
 
-  const requesterName = appName || pendingRef.current?.appName || 'Aplicativo';
+  const requesterName = appName || pending?.appName || 'Aplicativo';
+  const requestedFields: RequestedField[] = pending?.requestedFields || [];
   const isBusy = isAuthenticating || loading;
 
   const runShareFlow = async (pending: PendingShare) => {
@@ -77,7 +91,6 @@ export default function Consent({ appName, onClose, onConfirm }: ConsentProps) {
   };
 
   const handleConfirm = async () => {
-    const pending = pendingRef.current;
     if (!pending?.shareUrl) return Alert.alert('Erro', 'Requisição inválida.');
 
     try {
@@ -104,7 +117,7 @@ export default function Consent({ appName, onClose, onConfirm }: ConsentProps) {
   };
 
   const handleCancel = async () => {
-    await declineShare(pendingRef.current?.origin);
+    await declineShare(pending?.origin);
     onClose();
   };
 
@@ -125,22 +138,28 @@ export default function Consent({ appName, onClose, onConfirm }: ConsentProps) {
 
         <RequesterCard>
           <RequesterIcon>
-            <Ionicons name="beer" size={32} color="#F59E0B" />
+            <Ionicons name="document-text" size={32} color="#3B82F6" />
           </RequesterIcon>
           <RequesterLabel>Solicitado por</RequesterLabel>
           <RequesterName>{requesterName}</RequesterName>
-          <RequesterReason>Para verificar sua maioridade na entrega de bebidas alcoólicas.</RequesterReason>
+          <RequesterReason>
+            {requestedFields.length > 0
+              ? `Para verificar: ${requestedFields.map(getFieldLabel).join(', ')}.`
+              : 'Para verificar seus dados de credencial.'}
+          </RequesterReason>
         </RequesterCard>
 
-        <SectionTitle>Dados solicitados (obrigatórios):</SectionTitle>
+        <SectionTitle>Dados solicitados ({requestedFields.length}):</SectionTitle>
         <DataContainer>
-          <DataRow>
-            <DataRowLeft>
-              <Ionicons name="checkmark-done-circle-outline" size={24} color="#6B7280" />
-              <DataLabel>Maior de 18 anos</DataLabel>
-            </DataRowLeft>
-            <Ionicons name="checkmark-circle" size={24} color="#10B981" />
-          </DataRow>
+          {requestedFields.map((field, idx) => (
+            <DataRow key={idx}>
+              <DataRowLeft>
+                <Ionicons name="checkmark-done-circle-outline" size={24} color="#6B7280" />
+                <DataLabel>{getFieldLabel(field)}</DataLabel>
+              </DataRowLeft>
+              <Ionicons name="checkmark-circle" size={24} color="#10B981" />
+            </DataRow>
+          ))}
         </DataContainer>
 
         <RetentionCard>

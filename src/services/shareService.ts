@@ -50,15 +50,15 @@ function isCredentialValid(vc: any, type: string): boolean {
 }
 
 async function downloadMissingCredentials(credentials: ResolvedCredential[]): Promise<void> {
+  // Always delete existing credentials and download fresh ones
+  // The server rejects stale VCs, so we always need a fresh VC
   const existing = await VCSDK.credentials.getAll();
-  const missing = credentials.filter(
-    (c) => !existing.some((vc: any) => isCredentialValid(vc, c.type))
-  );
-
-  if (missing.length === 0) return;
+  for (const vc of existing) {
+    await VCSDK.credentials.delete(vc.id);
+  }
 
   const { successCount, error424Count, realErrorCount } =
-    await VCSDK.share.downloadCredentials(missing);
+    await VCSDK.share.downloadCredentials(credentials);
 
   if (successCount === 0)
     throw new Error(`Download falhou. 424s: ${error424Count}, erros: ${realErrorCount}`);
@@ -68,8 +68,11 @@ async function sendPresentation(authRequest: any, credentials: ResolvedCredentia
   const result = await VCSDK.share.completeShare(authRequest, credentials);
   await AsyncStorage.removeItem(PENDING_KEY);
 
-  if (result.success && pending.origin)
-    await Linking.openURL(`${pending.origin}?verified=true&requestId=${pending.requestId}`);
+  if (result.success && pending.origin) {
+    try {
+      await Linking.openURL(pending.origin);
+    } catch {}
+  }
 }
 
 export async function executeShare(pending: PendingShare): Promise<void> {

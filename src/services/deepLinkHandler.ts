@@ -12,12 +12,19 @@ interface PresentationDefinition {
   input_descriptors: any[];
 }
 
+export interface RequestedField {
+  id: string;
+  name: string;
+  type: string;
+}
+
 interface DeepLinkParams {
   origin?: string;
   requestId?: string;
   state?: string;
   nonce?: string;
   request_uri?: string;
+  response_uri?: string;
   presentation_definition?: string;
 }
 
@@ -26,6 +33,7 @@ interface PendingDeepLink {
   shareUrl: string;
   origin: string;
   requestId: string;
+  requestedFields: RequestedField[];
 }
 
 const DEFAULT_PRESENTATION_DEFINITION: PresentationDefinition = {
@@ -46,9 +54,10 @@ const BASE_SHARE_PARAMS = {
   client_metadata: JSON.stringify({ client_name: CLIENT_NAME }),
 };
 
-function buildShareUrl(requestId: string, nonce: string, presentationDefinition: PresentationDefinition): string {
+function buildShareUrl(requestId: string, nonce: string, presentationDefinition: PresentationDefinition, responseUri?: string): string {
   const params = new URLSearchParams({
     ...BASE_SHARE_PARAMS,
+    redirect_uri: responseUri || RESPONSE_URI,
     presentation_definition: JSON.stringify(presentationDefinition),
     nonce,
     state: requestId,
@@ -95,17 +104,30 @@ async function resolveShareUrl(params: DeepLinkParams): Promise<string> {
     params.requestId ?? params.state ?? '',
     params.nonce ?? '',
     resolvePresentationDefinition(params.presentation_definition),
+    params.response_uri,
   );
 }
 
-export async function handleDeepLink(url: string): Promise<{ appName: string }> {
+function extractRequestedFields(pd: PresentationDefinition): RequestedField[] {
+  return pd.input_descriptors.map((d) => ({
+    id: d.id,
+    name: d.name || d.id,
+    type: d.constraints?.fields
+      ?.find((f: any) => f.path?.includes('$.type'))
+      ?.filter?.pattern ?? d.id,
+  }));
+}
+
+export async function handleDeepLink(url: string): Promise<{ appName: string; requestedFields: RequestedField[] }> {
   const params = parseDeepLinkParams(url);
   const origin = params.origin ?? '';
   const appName = extractAppName(origin);
   const shareUrl = await resolveShareUrl(params);
+  const pd = resolvePresentationDefinition(params.presentation_definition);
+  const requestedFields = extractRequestedFields(pd);
 
-  const pending: PendingDeepLink = { appName, shareUrl, origin, requestId: params.requestId ?? params.state ?? '' };
+  const pending: PendingDeepLink = { appName, shareUrl, origin, requestId: params.requestId ?? params.state ?? '', requestedFields };
   await AsyncStorage.setItem(PENDING_KEY, JSON.stringify(pending));
 
-  return { appName };
+  return { appName, requestedFields };
 }
