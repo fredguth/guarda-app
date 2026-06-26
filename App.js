@@ -3,11 +3,12 @@ import { View, StyleSheet } from 'react-native';
 import { Linking } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+// crypto.subtle shim for jsonld - must run before any SDK imports
+import './src/polyfills';
+
 import { handleDeepLink, PENDING_KEY } from './src/services/deepLinkHandler';
 import { VCSDK } from 'vc-sdk-headless';
-
-// crypto.subtle shim for jsonld - must run after native modules are ready
-import './src/polyfills';
 
 import Splash from './src/screens/Splash/Splash';
 import Login from './src/screens/Login/Login';
