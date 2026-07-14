@@ -2,6 +2,7 @@ import React from 'react';
 import { TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { HeaderContainer, HeaderIcons, HeaderTitle, HeaderTitleContainer, IconButton, Logo } from './styles';
+import VersionBadge from '../VersionBadge';
 
 export default function Header({ onNavigateAdd, onNavigateSplash, onNavigateProfile }) {
   return (
@@ -10,7 +11,10 @@ export default function Header({ onNavigateAdd, onNavigateSplash, onNavigateProf
         <TouchableOpacity>
           <Logo width={42} height={42} />
         </TouchableOpacity>
-        <HeaderTitle>Carteira</HeaderTitle>
+        <>
+          <HeaderTitle>Carteira</HeaderTitle>
+          <VersionBadge />
+        </>
       </HeaderTitleContainer>
       <HeaderIcons>
         <TouchableOpacity onPress={onNavigateAdd}>
@@ -27,5 +31,3 @@ export default function Header({ onNavigateAdd, onNavigateSplash, onNavigateProf
     </HeaderContainer>
   );
 }
-
-

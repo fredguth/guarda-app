@@ -14,6 +14,8 @@ import {
   SecondaryButtonText,
 } from './styles';
 
+import VersionBadge from '../VersionBadge';
+
 interface NoCredentialModalProps {
   visible: boolean;
   onContinue: () => void;
@@ -49,6 +51,7 @@ export default function NoCredentialModal({ visible, onContinue, onDismiss }: No
               <PrimaryButtonText>Continuar</PrimaryButtonText>
             </PrimaryButton>
           </ButtonRow>
+          <VersionBadge />
         </ModalContainer>
       </ModalOverlay>
     </Modal>

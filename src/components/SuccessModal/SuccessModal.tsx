@@ -12,6 +12,8 @@ import {
   CheckmarkCircle,
 } from './styles';
 
+import VersionBadge from '../VersionBadge';
+
 interface SuccessModalProps {
   visible: boolean;
   title?: string;
@@ -64,6 +66,7 @@ export default function SuccessModal({
           <PrimaryButton onPress={onClose} activeOpacity={0.8}>
             <PrimaryButtonText>{buttonText}</PrimaryButtonText>
           </PrimaryButton>
+          <VersionBadge />
         </ModalContainer>
       </ModalOverlay>
     </Modal>

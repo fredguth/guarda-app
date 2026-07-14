@@ -11,6 +11,8 @@ import {
   PrimaryButtonText,
 } from './styles';
 
+import VersionBadge from '../VersionBadge';
+
 interface ErrorModalProps {
   visible: boolean;
   title?: string;
@@ -47,6 +49,7 @@ export default function ErrorModal({
           <PrimaryButton onPress={onClose} activeOpacity={0.8}>
             <PrimaryButtonText>{buttonText}</PrimaryButtonText>
           </PrimaryButton>
+          <VersionBadge />
         </ModalContainer>
       </ModalOverlay>
     </Modal>

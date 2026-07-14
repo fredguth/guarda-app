@@ -18,6 +18,8 @@ import {
   LoadingText,
 } from './styles';
 
+import VersionBadge from '../VersionBadge';
+
 interface DeleteCredentialModalProps {
   visible: boolean;
   onClose: () => void;
@@ -81,6 +83,7 @@ export default function DeleteCredentialModal({ visible, onClose, onConfirm }: D
               <SecondaryButtonText>Cancelar</SecondaryButtonText>
             </SecondaryButton>
           </ButtonContainer>
+          <VersionBadge />
         </ModalContainer>
       </ModalOverlay>
     </Modal>

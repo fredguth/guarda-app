@@ -18,6 +18,8 @@ import {
   LoadingText,
 } from './styles';
 
+import VersionBadge from '../VersionBadge';
+
 interface ClearCredentialsModalProps {
   visible: boolean;
   onClose: () => void;
@@ -89,6 +91,7 @@ export default function ClearCredentialsModal({ visible, onClose, onConfirm }: C
               <SecondaryButtonText>Cancelar</SecondaryButtonText>
             </SecondaryButton>
           </ButtonContainer>
+          <VersionBadge />
         </ModalContainer>
       </ModalOverlay>
     </Modal>

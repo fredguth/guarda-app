@@ -6,6 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { executeShare, declineShare } from '../../services/shareService';
 import { PENDING_KEY, RequestedField } from '../../services/deepLinkHandler';
+import VersionBadge from '../../components/VersionBadge';
 import {
   Container,
   Header,
@@ -190,6 +191,7 @@ export default function Consent({ appName, onClose, onConfirm }: ConsentProps) {
         <SecondaryButton onPress={handleCancel}>
           <SecondaryButtonText>Cancelar</SecondaryButtonText>
         </SecondaryButton>
+        <VersionBadge />
       </Footer>
     </Container>
   );
