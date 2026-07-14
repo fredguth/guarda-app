@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCameraPermissions } from 'expo-camera';
 import { useRef, useState } from 'react';
 import { Alert } from 'react-native';
-import { PENDING_KEY, RequestedField } from '../services/deepLinkHandler';
+import { PENDING_KEY, RequestedField, resolveOpenId4VpUrl } from '../services/deepLinkHandler';
 
 interface ShareUrlResult {
   shareUrl: string;
@@ -83,12 +83,9 @@ export function useQrScanner({ onScanned }: UseQrScannerProps) {
     const [, query] = data.split('?');
     const params = new URLSearchParams(query || '');
     const clientId = params.get('client_id') ?? '';
-    let requestedFields: RequestedField[] = [];
-    try {
-      const pd = JSON.parse(params.get('presentation_definition') || '{}');
-      requestedFields = extractFieldsFromDescriptors(pd.input_descriptors);
-    } catch {}
-    await savePendingAndNavigate(resolveAppName(clientId), data, '', requestedFields);
+    const { url: shareUrl, pd } = await resolveOpenId4VpUrl(data);
+    const requestedFields = extractFieldsFromDescriptors(pd?.input_descriptors);
+    await savePendingAndNavigate(resolveAppName(clientId), shareUrl, '', requestedFields);
   }
 
   async function handleScan(data: string): Promise<void> {
