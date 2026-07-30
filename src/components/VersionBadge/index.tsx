@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
-const version = process.env.EXPO_PUBLIC_APP_VERSION ?? '1.3.3';
-const env = process.env.EXPO_PUBLIC_ENV ?? 'dev';
+const version = '1.3.4';
+const env = 'dev';
 
 export default function VersionBadge() {
   return (

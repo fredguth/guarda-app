@@ -23,6 +23,7 @@ interface DeepLinkParams {
   requestId?: string;
   state?: string;
   nonce?: string;
+  client_id?: string;
   request_uri?: string;
   response_uri?: string;
   presentation_definition?: string;
@@ -54,9 +55,10 @@ const BASE_SHARE_PARAMS = {
   client_metadata: JSON.stringify({ client_name: CLIENT_NAME }),
 };
 
-function buildShareUrl(requestId: string, nonce: string, presentationDefinition: PresentationDefinition, responseUri?: string): string {
+function buildShareUrl(requestId: string, nonce: string, presentationDefinition: PresentationDefinition, responseUri?: string, clientId?: string): string {
   const params = new URLSearchParams({
     ...BASE_SHARE_PARAMS,
+    client_id: clientId ?? BASE_SHARE_PARAMS.client_id,
     redirect_uri: responseUri || RESPONSE_URI,
     presentation_definition: JSON.stringify(presentationDefinition),
     nonce,
@@ -106,6 +108,7 @@ async function resolveShareUrl(params: DeepLinkParams): Promise<{ url: string; p
       params.nonce ?? '',
       pd,
       params.response_uri,
+      params.client_id,
     ),
     pd,
   };
