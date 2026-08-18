@@ -4,8 +4,14 @@ import { Linking } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+
+// crypto.subtle shim for jsonld - must run before any SDK imports
+import './src/polyfills';
+
+
 import { handleDeepLink, PENDING_KEY } from './src/services/deepLinkHandler';
-import { VCSDK } from 'vc-sdk-headless';
+import { VCSDK } from '@br.gov.dataprev.inji/wallet-sdk';
+
 
 import Splash from './src/screens/Splash/Splash';
 import Login from './src/screens/Login/Login';
@@ -19,6 +25,7 @@ import Header from './src/components/Header/Header';
 import NoCredentialModal from './src/components/NoCredentialModal';
 import { useAuthStore } from './src/store/authStore';
 
+
 export default function App() {
   const [currentScreen, setCurrentScreen] = React.useState('Splash');
   const [pendingScreen, setPendingScreen] = React.useState(null);
@@ -28,7 +35,9 @@ export default function App() {
   const login = useAuthStore((state) => state.login);
   const hydrate = useAuthStore((state) => state.hydrate);
 
+
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
 
   const navigateToConsent = React.useCallback(async (appName) => {
     setPendingConsent({ appName });
@@ -40,6 +49,7 @@ export default function App() {
     }
   }, []);
 
+
   const processDeepLink = React.useCallback(async (url) => {
     if (!url || !url.startsWith('openid4vp://') || url.includes('expo-development-client')) return;
     try {
@@ -50,6 +60,7 @@ export default function App() {
     }
   }, [navigateToConsent]);
 
+
   React.useEffect(() => {
     AsyncStorage.removeItem(PENDING_KEY).catch(() => {});
     hydrate();
@@ -58,7 +69,9 @@ export default function App() {
     return () => sub.remove();
   }, [processDeepLink]);
 
+
   const [sdkReady, setSdkReady] = React.useState(false);
+
 
   React.useEffect(() => {
     const SDK_CONFIG = {
@@ -78,9 +91,11 @@ export default function App() {
       storage: { encrypted: true },
     };
 
+
     let attempts = 0;
     const MAX_RETRIES = 3;
     const RETRY_DELAY = 3000;
+
 
     const tryInit = () => {
       attempts++;
@@ -99,14 +114,17 @@ export default function App() {
     tryInit();
   }, []);
 
+
   const navigateTo = (screen) => {
     setCurrentScreen(screen);
   };
+
 
   const navigateToDocument = (credential) => {
     setSelectedCredential(credential);
     setCurrentScreen('DocumentDetail');
   };
+
 
   const handleLogin = (authData) => {
     login(authData);
@@ -114,30 +132,33 @@ export default function App() {
     setPendingScreen(null);
   };
 
+
   const handleLoginRequired = (returnScreen) => {
     setPendingScreen(returnScreen);
     navigateTo('Login');
   };
 
+
   return (
     <SafeAreaProvider>
       <View style={styles.container}>
       {currentScreen !== 'Splash' && currentScreen !== 'Login' && currentScreen !== 'Consent' && currentScreen !== 'QrScanner' && (
-        <Header 
-          onNavigateAdd={() => navigateTo('AddDocument')} 
+        <Header
+          onNavigateAdd={() => navigateTo('AddDocument')}
           onNavigateSplash={() => navigateTo('Splash')}
-          onNavigateProfile={() => navigateTo('Profile')} 
+          onNavigateProfile={() => navigateTo('Profile')}
         />
       )}
-      
+     
       {currentScreen === 'Splash' && (
         <Splash onFinish={() => navigateTo('Home')} />
       )}
 
+
       {currentScreen === 'Login' && (
         <Login onLogin={handleLogin} onBack={() => { setPendingScreen(null); navigateTo('Home'); }} />
       )}
-      
+     
       {currentScreen === 'Home' && (
         <Home
           sdkReady={sdkReady}
@@ -149,13 +170,15 @@ export default function App() {
         />
       )}
 
+
       {currentScreen === 'AddDocument' && (
         <AddDocument sdkReady={sdkReady} onBack={() => navigateTo('Home')} onLoginRequired={() => handleLoginRequired('AddDocument')} />
       )}
 
+
       {currentScreen === 'DocumentDetail' && (
-        <DocumentDetail 
-          onBack={() => navigateTo('Home')} 
+        <DocumentDetail
+          onBack={() => navigateTo('Home')}
           credential={selectedCredential}
           onDelete={async (vcId) => {
             await VCSDK.credentials.delete(vcId);
@@ -163,9 +186,11 @@ export default function App() {
         />
       )}
 
+
       {currentScreen === 'Profile' && (
         <Profile onBack={() => navigateTo('Home')} />
       )}
+
 
       {currentScreen === 'QrScanner' && (
         <QrScanner
@@ -174,11 +199,13 @@ export default function App() {
         />
       )}
 
+
       <NoCredentialModal
         visible={showNoCredentialModal}
         onContinue={() => { setShowNoCredentialModal(false); setCurrentScreen('Login'); }}
         onDismiss={() => { setShowNoCredentialModal(false); setPendingScreen(null); AsyncStorage.removeItem(PENDING_KEY).catch(() => {}); }}
       />
+
 
       {currentScreen === 'Consent' && (
         <Consent
@@ -191,6 +218,7 @@ export default function App() {
     </SafeAreaProvider>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
