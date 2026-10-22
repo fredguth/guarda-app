@@ -30,10 +30,11 @@ export const saveCallbackParams = async (params: Record<string, string>): Promis
 
 export const saveTokenData = async (token: any): Promise<void> => {
   const expiresAt = token.expires_in ? String(Date.now() + token.expires_in * 1000) : '';
+  const cNonce = token.c_nonce || extractNonce(token);
   await Promise.all([
     token.access_token ? SecureStore.setItemAsync('access_token', token.access_token, SECURE_OPTS) : Promise.resolve(),
     token.id_token     ? SecureStore.setItemAsync('id_token',     token.id_token,     SECURE_OPTS) : Promise.resolve(),
-    SecureStore.setItemAsync('c_nonce', extractNonce(token), SECURE_OPTS),
+    cNonce ? SecureStore.setItemAsync('c_nonce', cNonce, SECURE_OPTS) : Promise.resolve(),
     AsyncStorage.setItem('token_type', token.token_type || ''),
     AsyncStorage.setItem('expires_at', expiresAt),
     AsyncStorage.setItem('scope',      token.scope || ''),

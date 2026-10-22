@@ -28,7 +28,7 @@ import {
 interface DocumentDetailProps {
   onBack: () => void;
   credential: any;
-  onDelete: (vcId: string) => Promise<void>;
+  onDelete: (vcId: string, isMdoc?: boolean) => Promise<void>;
 }
 
 interface AgeInfo {
@@ -174,15 +174,40 @@ function CAFSection({ subject }: { subject: any }) {
   );
 }
 
+function MdocSection({ mdoc }: { mdoc: any }) {
+  const claims = mdoc.metadata?.credentialType?.msoMdocClaims || {};
+  const namespace = Object.keys(claims)[0] || '';
+  const fields = namespace ? Object.keys(claims[namespace]) : [];
+
+  return (
+    <>
+      <SectionTitle>Documento Digital (mdoc)</SectionTitle>
+      <InfoCard>
+        <InfoRow><InfoLabel>Doctype</InfoLabel><InfoValue>{mdoc.doctype}</InfoValue></InfoRow>
+        <InfoRow bordered><InfoLabel>Emissor</InfoLabel><InfoValue>{mdoc.issuer || 'N/A'}</InfoValue></InfoRow>
+        <InfoRow bordered><InfoLabel>Emitido em</InfoLabel><InfoValue>{formatDate(mdoc.issuedAt)}</InfoValue></InfoRow>
+        {fields.length > 0 && (
+          <InfoRow bordered>
+            <InfoLabel>Atributos</InfoLabel>
+            <InfoValue>{fields.join(', ')}</InfoValue>
+          </InfoRow>
+        )}
+        <InfoRow><InfoLabel>Formato</InfoLabel><InfoValue>ISO 18013-5 (mso_mdoc)</InfoValue></InfoRow>
+      </InfoCard>
+    </>
+  );
+}
+
 export default function DocumentDetail({ onBack, credential, onDelete }: DocumentDetailProps) {
-  const vc = credential?.vc || {};
-  const subject = vc.credentialSubject || {};
-  const credType = resolveCredentialType(vc);
+  const isMdoc = credential?.isMdoc === true || credential?.vc?.format === 'mso_mdoc';
+  const vc = isMdoc ? credential?.vc : (credential?.vc || {});
+  const subject = vc?.credentialSubject || {};
+  const credType = isMdoc ? 'mdoc' : resolveCredentialType(vc);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const handleDelete = async () => {
     try {
-      await onDelete(credential?.vc?.id ?? credential?.id);
+      await onDelete(credential?.vc?.id ?? credential?.id, isMdoc);
       setShowDeleteModal(false);
       onBack();
     } catch {
@@ -203,13 +228,18 @@ export default function DocumentDetail({ onBack, credential, onDelete }: Documen
       <ScrollContent>
         {credType === 'Maioridade' && <AgeSection subject={subject} />}
 
-        <SectionTitle>Informações da Credencial</SectionTitle>
-        <InfoCard>
-          <InfoRow><InfoLabel>Tipo</InfoLabel><InfoValue>{credType}</InfoValue></InfoRow>
-          <InfoRow bordered><InfoLabel>Emissor</InfoLabel><InfoValue>{resolveIssuerName(vc)}</InfoValue></InfoRow>
-          <InfoRow bordered><InfoLabel>Data de Emissão</InfoLabel><InfoValue>{formatDate(vc.issuanceDate)}</InfoValue></InfoRow>
-          <InfoRow><InfoLabel>Validade</InfoLabel><InfoValue>{formatDate(vc.expirationDate) || 'Indeterminada'}</InfoValue></InfoRow>
-        </InfoCard>
+        {credType === 'mdoc' && <MdocSection mdoc={vc} />}
+        {credType !== 'mdoc' && (
+          <>
+            <SectionTitle>Informações da Credencial</SectionTitle>
+            <InfoCard>
+              <InfoRow><InfoLabel>Tipo</InfoLabel><InfoValue>{credType}</InfoValue></InfoRow>
+              <InfoRow bordered><InfoLabel>Emissor</InfoLabel><InfoValue>{resolveIssuerName(vc)}</InfoValue></InfoRow>
+              <InfoRow bordered><InfoLabel>Data de Emissão</InfoLabel><InfoValue>{formatDate(vc.issuanceDate)}</InfoValue></InfoRow>
+              <InfoRow><InfoLabel>Validade</InfoLabel><InfoValue>{formatDate(vc.expirationDate) || 'Indeterminada'}</InfoValue></InfoRow>
+            </InfoCard>
+          </>
+        )}
 
         {credType === 'CAR' && <CARSection subject={subject} />}
         {credType === 'CCIR' && <CCIRSection subject={subject} />}

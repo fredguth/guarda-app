@@ -157,8 +157,12 @@ export default function App() {
         <DocumentDetail 
           onBack={() => navigateTo('Home')} 
           credential={selectedCredential}
-          onDelete={async (vcId) => {
-            await VCSDK.credentials.delete(vcId);
+          onDelete={async (vcId, isMdoc) => {
+            if (isMdoc) {
+              await VCSDK.credentials.deleteMdoc?.(vcId);
+            } else {
+              await VCSDK.credentials.delete(vcId);
+            }
           }}
         />
       )}

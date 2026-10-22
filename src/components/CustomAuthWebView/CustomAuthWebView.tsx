@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator } from 'react-native';
+import { Buffer } from 'buffer';
 import { Ionicons } from '@expo/vector-icons';
 import { CustomAuthWebViewProps, PkceData } from './types';
 import { saveCallbackParams, saveUserData, saveTokenData } from './authStorage';
-import { generatePkce, buildAuthorizationUrl, fetchUserProfile, getOAuthConfig } from './authService';
+import { generatePkce, buildAuthorizationUrl, fetchUserProfile, fetchCNonce, getOAuthConfig } from './authService';
 import { Container, Header, BackButton, HeaderTitle, InitContainer, StyledWebView, LoadingOverlay, LoadingText } from './styles';
 
 export const CustomAuthWebView: React.FC<CustomAuthWebViewProps> = ({ onSuccess, onError, onCancel }) => {
@@ -20,14 +21,48 @@ export const CustomAuthWebView: React.FC<CustomAuthWebViewProps> = ({ onSuccess,
   const handleAuthorizationCode = async (code: string, currentPkce: PkceData) => {
     setIsAuthenticating(true);
     try {
-      const response = await fetchUserProfile(code, currentPkce);
-      const { accessToken, ...user } = response;
-      await saveUserData(user);
-      if (accessToken) {
-        await saveTokenData({ access_token: accessToken });
+      // get-token obtém o access_token do Certify (necessário para download de credencial)
+      const certifyToken = await fetchCNonce('MGI', code, currentPkce);
+
+      let user: any = {};
+      let accessToken: string | null = null;
+
+      if (certifyToken) {
+        // Extrai perfil do id_token do Certify
+        accessToken = certifyToken.access_token;
+        try {
+          const parts = certifyToken.id_token?.split('.');
+          if (parts?.length === 3) {
+            const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString());
+            user = {
+              sub: payload.sub,
+              name: payload.name || payload.preferred_username || payload.sub,
+              email: payload.email,
+              picture: payload.picture,
+            };
+          }
+        } catch {}
+
+        // Tenta também obter perfil completo do Gov.br (pode falhar se code já foi consumido)
+        try {
+          const response = await fetchUserProfile(code, currentPkce);
+          const { accessToken: _, ...govBrUser } = response;
+          user = { ...user, ...govBrUser };
+        } catch {}
+      } else {
+        // Fallback: usa apenas user/profile do Gov.br
+        const response = await fetchUserProfile(code, currentPkce);
+        const { accessToken: govBrToken, ...govBrUser } = response;
+        accessToken = govBrToken;
+        user = govBrUser;
       }
 
-      onSuccess({ user, accessToken: accessToken ?? null });
+      await saveUserData(user);
+      await saveTokenData({
+        access_token: accessToken,
+        c_nonce: certifyToken?.c_nonce ?? undefined,
+      });
+      onSuccess({ user, accessToken });
     } catch (error: any) {
       onError(error?.message || 'Authentication failed');
     } finally {

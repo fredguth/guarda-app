@@ -40,6 +40,19 @@ function getCredentialInfo(cred: any) {
   const types: string[] = cred.vc?.type || [];
   const subject = cred.vc?.credentialSubject;
 
+  // mdoc — formato ISO 18013-5
+  if (cred.isMdoc || cred.vc?.format === 'mso_mdoc') {
+    const doctype: string = cred.vc?.doctype || '';
+    const subtitle = cred.vc?.metadata?.issuerInfo?.name || cred.vc?.issuer || 'Documento Digital';
+    if (doctype.includes('eca') || doctype.includes('mgi')) {
+      return { title: 'Comprovante de Maioridade (mdoc)', subtitle, isWarn: false };
+    }
+    if (doctype.includes('mDL') || doctype.includes('18013')) {
+      return { title: 'Carteira de Habilitação Digital', subtitle, isWarn: false };
+    }
+    return { title: cred.title || 'Documento Digital (mdoc)', subtitle, isWarn: false };
+  }
+
   if (types.includes('ECACredential') || types.includes('AgeVerificationCredential')) {
     const isOver18 = subject?.isOver18 ?? subject?.maiorDeIdade ?? subject?.maior18;
     const subtitle =

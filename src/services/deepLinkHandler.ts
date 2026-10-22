@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { jwtDecode } from 'jwt-decode';
+import * as Crypto from 'expo-crypto';
 
 export const PENDING_KEY = 'pending_deep_link';
 
@@ -16,6 +17,9 @@ export interface RequestedField {
   id: string;
   name: string;
   type: string;
+  // paths dos campos SD-JWT pedidos pelo verifier (ex: ["$.cpf", "$.name"])
+  // vazio = ldp_vc ou sem restrição de campos específicos
+  disclosurePaths?: string[];
 }
 
 interface DeepLinkParams {
@@ -54,6 +58,10 @@ const BASE_SHARE_PARAMS = {
   client_metadata: JSON.stringify({ client_name: CLIENT_NAME }),
 };
 
+function generateNonce(): string {
+  return Crypto.randomUUID();
+}
+
 function buildShareUrl(requestId: string, nonce: string, presentationDefinition: PresentationDefinition, responseUri?: string): string {
   const params = new URLSearchParams({
     ...BASE_SHARE_PARAMS,
@@ -77,7 +85,7 @@ async function resolveShareUrlFromRequestUri(requestUri: string): Promise<{ url:
     client_id: payload.client_id ?? BASE_SHARE_PARAMS.client_id,
     redirect_uri: redirectUri,
     presentation_definition: JSON.stringify(pd),
-    nonce: payload.nonce ?? '',
+    nonce: payload.nonce || generateNonce(),
     state: payload.state ?? '',
   });
   return { url: `openid4vp://?${params.toString()}`, pd };
@@ -103,7 +111,7 @@ async function resolveShareUrl(params: DeepLinkParams): Promise<{ url: string; p
   return {
     url: buildShareUrl(
       params.requestId ?? params.state ?? '',
-      params.nonce ?? '',
+      params.nonce || generateNonce(),
       pd,
       params.response_uri,
     ),
@@ -112,13 +120,20 @@ async function resolveShareUrl(params: DeepLinkParams): Promise<{ url: string; p
 }
 
 function extractRequestedFields(pd: PresentationDefinition): RequestedField[] {
-  return pd.input_descriptors.map((d) => ({
-    id: d.id,
-    name: d.name || d.id,
-    type: d.constraints?.fields
-      ?.find((f: any) => f.path?.includes('$.type'))
-      ?.filter?.pattern ?? d.id,
-  }));
+  return pd.input_descriptors.map((d) => {
+    const fields: any[] = d.constraints?.fields ?? [];
+    const typeField = fields.find((f: any) => f.path?.includes('$.type'));
+    // Campos que NÃO são $.type são os atributos SD-JWT que o verifier quer ver
+    const disclosurePaths = fields
+      .filter((f: any) => !f.path?.includes('$.type'))
+      .flatMap((f: any) => f.path as string[]);
+    return {
+      id: d.id,
+      name: d.name || d.id,
+      type: typeField?.filter?.pattern ?? d.id,
+      disclosurePaths: disclosurePaths.length > 0 ? disclosurePaths : undefined,
+    };
+  });
 }
 
 export async function resolveOpenId4VpUrl(url: string): Promise<{ url: string; pd: PresentationDefinition }> {

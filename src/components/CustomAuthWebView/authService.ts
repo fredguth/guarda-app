@@ -59,3 +59,42 @@ export const fetchUserProfile = async (code: string, pkce: PkceData): Promise<an
   const json = await response.json();
   return json.data;
 };
+
+/**
+ * Obtém o token do Certify via mimoto /get-token/{issuer}.
+ * Retorna access_token do Certify + c_nonce, ou null se falhar.
+ * DEVE ser chamado antes de fetchUserProfile (ambos consomem o code).
+ */
+export const fetchCNonce = async (
+  issuerId: string,
+  code: string,
+  pkce: PkceData,
+): Promise<{ access_token: string; id_token?: string; c_nonce?: string } | null> => {
+  const cfg = getOAuthConfig();
+  try {
+    const body = new URLSearchParams({
+      grant_type: 'authorization_code',
+      code,
+      redirect_uri: cfg.redirectUri,
+      code_verifier: pkce.codeVerifier,
+    });
+    const response = await fetch(
+      `${cfg.mimotoUrl}/v1/mimoto/get-token/${issuerId}`,
+      { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body.toString() },
+    );
+    if (!response.ok) {
+      console.warn('[fetchCNonce] get-token failed:', response.status, await response.text());
+      return null;
+    }
+    const json = await response.json();
+    console.log('[fetchCNonce] get-token response keys:', Object.keys(json));
+    const token = json.access_token ?? json.response?.access_token;
+    const cNonce = json.c_nonce ?? json.response?.c_nonce;
+    const idToken = json.id_token ?? json.response?.id_token;
+    if (!token) return null;
+    return { access_token: token, id_token: idToken, c_nonce: cNonce };
+  } catch (e) {
+    console.warn('[fetchCNonce] error:', e);
+    return null;
+  }
+};
